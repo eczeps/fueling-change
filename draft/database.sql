@@ -27,12 +27,14 @@ create table achievement(
 );
 
 create table userform(
-    UID int,
 	Primary key (UID),
 	flights int,
 	driving int,
 	meat int,
 	laundry int
+	foreign key(UID) references user(UID)
+        on update cascade
+        on delete cascade
 );
 
 create table completed(
@@ -40,10 +42,16 @@ create table completed(
     AID int,
 	Primary Key (UID, AID),
 	timestamp datetime
+	foreign key(UID) references user(UID)
+        on update cascade
+        on delete cascade
 );
 
 create table starred(
     UID int,
     AID int,
 	Primary Key (UID, AID)
+	foreign key(UID) references user(UID)
+        on update cascade
+        on delete cascade
 );
