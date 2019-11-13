@@ -1,0 +1,39 @@
+
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Ellie Czepiel, Estrella Garcia, & Alissa Tinney">
+    <title>Movies Application</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+     
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    {% block search %}
+    {% endblock %}
+
+    {% block feature %}
+        <!-- fun fact goes here -->
+    {% endblock %}
+        
+
+    <h1>{{title}}</h1>
+
+    {% block body %}
+    
+    <p>Use the search bar above to search for a movie</p> 
+    <p>or</p> 
+    <p>click here for <a href="/movies/">all movies</a>.</p>
+    <p>click here for <a href="/movies/harry">all "harry" movies</a>.</p>
+    {% endblock %}
+
+
+
+{% block JSJQ %}
+{% endblock %}
+
+
+</body>
+</html>

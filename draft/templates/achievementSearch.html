@@ -1,0 +1,29 @@
+{% extends "main.html" %}
+
+{% block search%}
+<form id="search" method=POST action="/search/">
+    <input id="searchterm" placeholder="Search" name="searchterm">
+    <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+</form>
+{% endblock %}
+
+
+{% block feature %}
+        <!-- a different fun fact goes here -->
+{% endblock %}
+
+
+{% block body %}
+    
+    <table>
+        <th></th>
+    {% for achievement in achievements %}
+        <li>
+            {{achievement['title']}}
+        </li>
+
+    {% endfor %}
+    <!-- endfor or end for? -->
+    </table>
+
+{% endblock %}
