@@ -1,6 +1,22 @@
 {% extends "main.html" %}
 
-{% block search%}
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a class="active" href="/achievements/">Search Achievements</a></li>
+            {% if {{isLoggedIn}} %} <!-- hidden until login -->
+                <li><a href="/profile/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block search %}
 <form id="search" method=POST action="/search/">
     <input id="searchterm" placeholder="Search" name="searchterm">
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
@@ -14,16 +30,44 @@
 
 
 {% block body %}
+    <h1>Showing Achievements matching <i>{{title}}</i>:</h1>
     
-    <table>
-        <th></th>
-    {% for achievement in achievements %}
-        <li>
-            {{achievement['title']}}
-        </li>
-
-    {% endfor %}
-    <!-- endfor or end for? -->
+    <table id="achieves">
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Repeatable</th>
+            {% if {{isLoggedIn}} %}
+                <th>Self-Report</th>
+            {% endif %}
+        </tr>
+        
+        
+        {% for achievement in achievements %}
+        <tr data-tt="{{achievement['aID']}}">
+            <td class="title">{{achievement['title']}}</td>
+            <td class="description">{{achievement['description']}}</td>
+            <td class="repeatable">{{achievement['isRepeatable']}}</td>
+            {% if {{isLoggedIn}} and {{achievement['isSelfReport']}} and {{isReportable}} %} 
+                <!-- isReportable combines isLoggedIn, isRepeatable, and hasBeenReported -->
+                <td><button class="report-button">Go!</button></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
     </table>
+{% endblock %}
 
+
+{% block footerSearch %}
+    <form id="search" method=POST action="/search/">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+    </form>
+{% endblock %}
+
+
+{% block JSJQ %}
+<!-- need delegated handler to go to the right page -->
+<!-- each self-reported achievement has its own generated page with some info -->
+<!-- unimplemented -->
 {% endblock %}

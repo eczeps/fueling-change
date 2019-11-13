@@ -1,0 +1,19 @@
+{% extends "profile.html" %}
+<!-- Two load cases -->
+<!-- (1) Screen to log in -->
+<!-- (2) Confirmation of logging off -->
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+            {% if {{isLoggedIn}} %} <!-- hidden until login -->
+                <li><a href="/profile/">My Profile</a></li>
+                <li><a class="active" href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a class="active" href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}

@@ -4,26 +4,21 @@
 <head>
     <meta charset='utf-8'>
     <meta name=author content="Ellie Czepiel, Estrella Garcia, & Alissa Tinney">
-    <title>Fueling Change</title>
+    <title>Movies Application</title>
     <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
      
 </head>
 
 <body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script>
-        document.getElementById("slide").style.display = "none"
-        $('#slide').slideDown(5000);
-    </script>
-    
     <div id="content">
     <div id="textpad">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     {% block navigation %}
         <div id="navigation">
             <ul>
             <li><a class="active" href="/">Home</a></li>
             <li><a href="/achievements/">Search Achievements</a></li>
-                {% if isLoggedIn %} <!-- hidden until login -->
+                {% if {{isLoggedIn}} %} <!-- hidden until login -->
                     <li><a href="/profile/">My Profile</a></li>
                     <li><a href="/login/">Log Out</a></li>
                 {% else %} <!-- hidden when logged in -->
@@ -44,9 +39,9 @@
         <!-- any flashes we want go here -->
     {% endblock %}
     
-    <div id="slide">
-    {% block body %}
     <h1>{{title}}</h1>
+    {% block body %}
+    
     
     <p>
         Welcome to Fueling Change. Select from the options above to interact with our website.
@@ -57,7 +52,6 @@
 
     {% block footerSearch %}
     {% endblock %}
-    </div> <!-- end of slide div -->
 
     <div id="picture">
     {% block picture %}

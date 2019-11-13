@@ -1,12 +1,21 @@
 
-/* pulled from hwk5 */
+/* how to do variables: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties */
+:root {
+    --green: #78C31E;
+    --dark-green: #147818;
+    --light-blue: #1A94F9;
+    --blue: #0078FA;
+    --dark-blue: #0214A4;
+    --cream: #FFFDD0;
+}
 
+/* pulled from hwk5 */
 body {
-    background-color: #333;
+    background-color: var(--blue);
 }
 
 H1 {
-    color: teal;
+    color: var(--dark-green);
     font-size: 200%;
 }
 
@@ -18,7 +27,7 @@ H1 {
 
 form {
     display: inline-block;
-    border: 2px solid teal;
+    border: 2px solid var(--blue);
     padding: 2ex;
     border-radius: 2ex;
 }
@@ -26,7 +35,7 @@ form {
 [type=submit] {
     font-size: 1em;
     font-weight: normal;
-    border: 1px solid teal;
+    border: 1px solid var(--blue);
     border-radius: 0.5em;
     background-color: #d0FFFF;
 }
@@ -52,7 +61,7 @@ ul {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #333;
+    background-color: var(--blue);
 }
   
 li {
@@ -61,23 +70,23 @@ li {
   
 li a {
     display: block;
-    color: white;
+    color: var(--cream);
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
 }
   
 li a:hover:not(.active) {
-    background-color: #111;
+    background-color: var(--dark-green);
 }
   
 .active {
-    background-color: teal;
+    background-color: var(--dark-green);
 }
 
 /* divs */
-#fill {
-    background-color: white;
+#content {
+    background-color: var(--cream);
     width: 100%;
     height: auto;
     padding-bottom: 20px;
