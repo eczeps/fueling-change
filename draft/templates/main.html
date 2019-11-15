@@ -11,10 +11,6 @@
 
 <body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script>
-        document.getElementById("slide").style.display = "none"
-        $('#slide').slideDown(5000);
-    </script>
     
     <div id="content">
     <div id="textpad">
@@ -23,7 +19,7 @@
             <ul>
             <li><a class="active" href="/">Home</a></li>
             <li><a href="/achievements/">Search Achievements</a></li>
-                {% if isLoggedIn %} <!-- hidden until login -->
+                {% if isLoggedIn != None %} <!-- hidden until login -->
                     <li><a href="/profile/">My Profile</a></li>
                     <li><a href="/login/">Log Out</a></li>
                 {% else %} <!-- hidden when logged in -->
@@ -32,19 +28,30 @@
             </ul>
         </div>
     {% endblock %}
-    
-    {% block search %}
-    {% endblock %}
-
-    {% block feature %}
-        <!-- fun fact goes here -->
-    {% endblock %}
 
     {% block flashing %}
         <!-- any flashes we want go here -->
     {% endblock %}
     
     <div id="slide">
+        <script>
+            var x = document.getElementById("slide");
+            if(x.style.display==="none"){
+                x.style.display = "block";
+    
+            }
+            else{
+                x.style.display = "none";
+            }           
+            ;
+        </script>
+    {% block search %}
+    {% endblock %}
+
+    {% block feature %}
+        <!-- fun fact goes here -->
+    {% endblock %}
+    
     {% block body %}
     <h1>{{title}}</h1>
     
@@ -52,11 +59,11 @@
         Welcome to Fueling Change. Select from the options above to interact with our website.
     </p>
     {% endblock %}
-    </div> <!-- end of textpad div -->
-    </div> <!-- end of content div -->
 
     {% block footerSearch %}
     {% endblock %}
+    </div> <!-- end of textpad div -->
+    </div> <!-- end of content div -->
     </div> <!-- end of slide div -->
 
     <div id="picture">
@@ -64,6 +71,12 @@
         <!-- place for scenic picture go here -->
     {% endblock %}
     </div> <!-- end of picture div -->
+
+
+    <!-- Sliding! -->
+    <script>
+        $('#slide').slideDown(500);
+    </script>
 
 {% block JSJQ %}
 {% endblock %}

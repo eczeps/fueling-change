@@ -41,19 +41,15 @@ def achievement(searchFor):
             a = databaseAccess.getAllAchievements(conn)
         else:
             a = databaseAccess.getAchievements(conn,searchFor)
-
-        return render_template('achievementSearch.html',title=searchFor, 
-                                                        achievements=a,
-                                                        isLoggedIn=loggedIn)
     
     if request.method == 'GET':
         searchFor = ''
         a = databaseAccess.getAllAchievements(conn)
 
-        return render_template('achievementSearch.html',title=searchFor,
-                                                        achievements=a,
-                                                        isLoggedIn=loggedIn,
-                                                        isReportable=)
+    return render_template('achievementSearch.html',title=searchFor,
+                                                    achievements=a,
+                                                    isLoggedIn=loggedIn,
+                                                    DB=cur)
 
 
 if __name__ == '__main__':

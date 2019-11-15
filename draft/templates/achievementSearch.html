@@ -1,11 +1,12 @@
 {% extends "main.html" %}
+<!-- import "databaseAccess.py" as dbAccess -->
 
 {% block navigation %}
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
         <li><a class="active" href="/achievements/">Search Achievements</a></li>
-            {% if {{isLoggedIn}} %} <!-- hidden until login -->
+            {% if isLoggedIn != None %} <!-- hidden until login -->
                 <li><a href="/profile/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->
@@ -30,29 +31,36 @@
 
 
 {% block body %}
-    <h1>Showing Achievements matching <i>{{title}}</i>:</h1>
+    
+    {% if title == "" %}
+        <h1>Showing All Achievements:</h1>
+    {% else %}
+        <h1>Showing Achievements matching <i>{{title}}</i>:</h1>
+    {% endif %}
     
     <table id="achieves">
         <tr>
             <th>Title</th>
             <th>Description</th>
-            <th>Repeatable</th>
-            {% if {{isLoggedIn}} %}
-                <th>Self-Report</th>
+            <th class="small">Repeatable</th>
+            {% if isLoggedIn != None %}
+                <th class="small">Self-Report</th>
             {% endif %}
         </tr>
         
         
         {% for achievement in achievements %}
-        {% set aID = {{achievement['AID']}} %}
-        {% set repeat = {{achievement['isRepeatable']}} %}
-        {% set report = {{achievement['isSelfReport']}} %}
+        {% set aID = achievement['AID'] %}
         <tr data-tt="{{aID}}">
             <td class="title">{{achievement['title']}}</td>
             <td class="description">{{achievement['description']}}</td>
-            <td class="repeatable">{{repeat}}</td>
-            {% if {{isLoggedIn}} != None and {{determineIsReportable({{currDB}}, aID, {{isLoggedIn}})}} %} 
-                <!-- isReportable combines isRepeatable and hasBeenReportedForUser -->
+            <td class="repeatable">
+                {% if achievement['isRepeatable'] == 1 %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}</td>
+            {% if isLoggedIn != None %} <!-- and dbAccess.determineIsReportable(DB, aID, isLoggedIn) -->
                 <td><button class="report-button">Go!</button></td>
             {% endif %}
         </tr>

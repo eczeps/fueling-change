@@ -30,6 +30,7 @@ form {
     border: 2px solid var(--blue);
     padding: 2ex;
     border-radius: 2ex;
+    margin-top: 30px;
 }
 
 [type=submit] {
@@ -52,7 +53,6 @@ fieldset {
 #iconlist li {
     display: inline;
 }
-
 
 /* Navigation bar */
 /* from: https://www.w3schools.com/css/css_navbar.asp */
@@ -94,4 +94,17 @@ li a:hover:not(.active) {
 
 #textpad {
     padding-left: 20px;
+}
+
+/* For the table */
+th {
+    min-width: 300px;
+}
+
+.small {
+    min-width: 100px;
+}
+
+th,td {
+    text-align: center;
 }
