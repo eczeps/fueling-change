@@ -7,7 +7,7 @@
         <li><a href="/">Home</a></li>
         <li><a class="active" href="/achievements/">Search Achievements</a></li>
             {% if isLoggedIn != None %} <!-- hidden until login -->
-                <li><a href="/profile/">My Profile</a></li>
+                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->
                 <li><a href="/login/">Login</a></li>

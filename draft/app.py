@@ -26,14 +26,30 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 @app.route('/')
 def index():
     global loggedIn
+    conn = databaseAccess.getConn(cur)
+    user = ""
+
+    if loggedIn != None:
+        userInfo = databaseAccess.getUser(conn, loggedIn)
+        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
+        user += '-' + str(userInfo['UID'])
+
     return render_template('main.html', title="Fueling Change",
-                                        isLoggedIn=loggedIn)
+                                        isLoggedIn=loggedIn,
+                                        userURL=user)
 
 
 @app.route('/achievements/', defaults={'searchFor': ""})
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
+    global loggedIn
     conn = databaseAccess.getConn(cur)
+    user = ""
+
+    if loggedIn != None:
+        userInfo = databaseAccess.getUser(conn, loggedIn)
+        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
+        user += '-' + str(userInfo['UID'])
 
     if request.method == 'POST':
         a = []
@@ -49,7 +65,29 @@ def achievement(searchFor):
     return render_template('achievementSearch.html',title=searchFor,
                                                     achievements=a,
                                                     isLoggedIn=loggedIn,
-                                                    DB=cur)
+                                                    DB=cur,
+                                                    userURL=user)
+
+
+@app.route('/profile/<user>/', methods=['POST', 'GET'])
+def profile(user):
+    global loggedIn
+    print(user)
+    UID = user.split('-')[2] #format first-lastname-UID
+    conn = databaseAccess.getConn(cur)
+    userInfo = databaseAccess.getUser(conn, UID)
+
+
+    titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+    currUser = (int(UID) == loggedIn) #boolean
+    print(currUser)
+
+    
+    return render_template('profile.html',  title=titleString,
+                                                isLoggedIn=loggedIn,
+                                                userURL=user,
+                                                isUser=currUser)
+
 
 
 if __name__ == '__main__':

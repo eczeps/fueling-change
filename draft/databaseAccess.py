@@ -88,16 +88,14 @@ def determineIsReportable(DB, AID, UID):
 
     return (alreadyReported and repeat and report)
 
-# from: https://stackoverflow.com/questions/4828406/import-a-python-module-into-a-jinja-template
-# environment = jinja2.Environment(whatever)
-# environment.filters['timesince'] = timesince
-
-# from: https://stackoverflow.com/questions/6036082/call-a-python-function-from-jinja2
-# add the functions and currentDB to jinja so they can be used in the templates
-# app.jinja_env.globals.update(determineIsReportable=determineIsReportable)
-# app.jinja_env.globals.update(getIsSelfReport=getIsSelfReport)
-# app.jinja_env.globals.update(getIsRepeatable=getIsRepeatable)
-# app.jinja_env.globals.update(currDB=currDB)
+def getUser(conn, UID):
+    '''Returns user information, as a dictionary.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select UID,first_Name,last_Name,footprint,
+                    flights,driving,meat,laundry from user
+                    where UID=%s''', [UID])
+    return curs.fetchone()
 
 
 

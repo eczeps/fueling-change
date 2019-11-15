@@ -9,14 +9,59 @@
         <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/achievements/">Search Achievements</a></li>
-            {% if {{isLoggedIn}} and {{isUser}} %} <!-- hidden until login -->
-                <li><a class="active" href="/profile/">My Profile</a></li>
+            {% if isLoggedIn and isUser %} <!-- hidden until login -->
+                <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
-            {% elif {{isLoggedIn}} %}
+            {% elif isLoggedIn %}
                 <li><a href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->
                 <li><a href="/login/">Login</a></li>
             {% endif %}
         </ul>
     </div>
+{% endblock %}
+
+{% block body %}
+    <h1>Hi {{title}}</h1>
+    
+    <p>
+        What would you like to do today?
+    </p>
+
+    {% if isLoggedIn != None %}
+        <form id="search" method=POST action="/profile/">
+            <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
+            <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button>
+            <!-- statistics also includes achievements -->
+        </form>
+
+        <p><button id="userFind" class="report-button">Search for User!</button></p>
+
+        <div class="hidden">
+            <script>
+                var x = document.getElementById("hidden");
+                if(x.style.display==="none"){
+                    x.style.display = "block";
+        
+                }
+                else{
+                    x.style.display = "none";
+                }           
+                ;
+            </script>
+
+        <form id="search" method=POST action="/profile/">
+            <input id="searchterm" placeholder="Search" name="searchterm">
+            <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Go!</button>
+        </form>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block JSJQ %}
+    <script>
+        $("#userFind").click(function(){
+            $('#hidden').slideDown(500);
+        });
+    </script>
 {% endblock %}
