@@ -17,7 +17,7 @@
 
 
 {% block search %}
-<form id="search" method=POST action="/search/">
+<form id="search" method=POST action="/achievement/">
     <input id="searchterm" placeholder="Search" name="searchterm">
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
 </form>
@@ -44,12 +44,15 @@
         
         
         {% for achievement in achievements %}
-        <tr data-tt="{{achievement['aID']}}">
+        {% set aID = {{achievement['AID']}} %}
+        {% set repeat = {{achievement['isRepeatable']}} %}
+        {% set report = {{achievement['isSelfReport']}} %}
+        <tr data-tt="{{aID}}">
             <td class="title">{{achievement['title']}}</td>
             <td class="description">{{achievement['description']}}</td>
-            <td class="repeatable">{{achievement['isRepeatable']}}</td>
-            {% if {{isLoggedIn}} and {{achievement['isSelfReport']}} and {{isReportable}} %} 
-                <!-- isReportable combines isLoggedIn, isRepeatable, and hasBeenReported -->
+            <td class="repeatable">{{repeat}}</td>
+            {% if {{isLoggedIn}} != None and {{determineIsReportable({{currDB}}, aID, {{isLoggedIn}})}} %} 
+                <!-- isReportable combines isRepeatable and hasBeenReportedForUser -->
                 <td><button class="report-button">Go!</button></td>
             {% endif %}
         </tr>

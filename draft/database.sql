@@ -1,6 +1,8 @@
 -- this file sets up the 'database' for the 'Fueling-Change App'
 -- The database consists of tables: 
 
+use atinney_db; -- change this when you are working please
+
 drop table if exists userform;
 drop table if exists completed;
 drop table if exists starred;
@@ -14,6 +16,12 @@ Create table user(
 	footprint float,
 	username varchar(30),
 	password varchar(30),
+	-- had to condense user and userform since can't have
+	-- userform use UID as a primary key
+	flights int,
+	driving int,
+	meat int,
+	laundry int,
 	Primary key (UID)
 );
 
@@ -21,28 +29,19 @@ create table achievement(
 	AID int auto_increment,
 	title varchar(30),
 	description varchar(50),
-	isRepeatable int(1),
-	isSelfReport int(1),
+	isRepeatable boolean not null default 0,
+	isSelfReport boolean not null default 0,
+	-- boolean in mysql is tinyint(1)
+	-- 0 is false
 	Primary Key (AID)
-);
-
-create table userform(
-	Primary key (UID),
-	flights int,
-	driving int,
-	meat int,
-	laundry int
-	foreign key(UID) references user(UID)
-        on update cascade
-        on delete cascade
 );
 
 create table completed(
     UID int,
     AID int,
-	Primary Key (UID, AID),
-	timestamp datetime
-	foreign key(UID) references user(UID)
+	Primary Key (UID, AID), --(UID, AID) won't always be unique: repeatable
+	timestamp datetime,
+	foreign key (UID) references user(UID)
         on update cascade
         on delete cascade
 );
@@ -50,8 +49,8 @@ create table completed(
 create table starred(
     UID int,
     AID int,
-	Primary Key (UID, AID)
-	foreign key(UID) references user(UID)
+	Primary Key (UID, AID),
+	foreign key (UID) references user(UID)
         on update cascade
         on delete cascade
 );

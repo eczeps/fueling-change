@@ -6,8 +6,11 @@ app = Flask(__name__)
 
 import sys,os,random
 import databaseAccess
-loggedIn = False
-# realistically, this will probably need to come from the database somehow
+
+cur = databaseAccess.currDB
+loggedIn = 1
+# realistically, this will be a real user's ID
+# for now we will just set it to 1 (run makeAchievements for this to work)
 # it depends on if we want our site to remember our users
 
 app.secret_key = 'your secret here'
@@ -27,23 +30,30 @@ def index():
                                         isLoggedIn=loggedIn)
 
 
-@app.route('/search/', methods = ['POST'])
-def search():
-    conn = databaseAccess.getConn('wmdb')
+@app.route('/achievements/', defaults={'searchFor': ""})
+@app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
+def achievement(searchFor):
+    conn = databaseAccess.getConn(cur)
 
-    return redirect(url_for('achievement',title=request.form.get('searchterm')))
+    if request.method == 'POST':
+        a = []
+        if(searchFor==""):
+            a = databaseAccess.getAllAchievements(conn)
+        else:
+            a = databaseAccess.getAchievements(conn,searchFor)
 
-
-@app.route('/achievements/', defaults={'title': ""})
-@app.route('/achievements/<title>', methods = ['POST'])
-def achievement(title):
-    a = []
-    if(title==""):
+        return render_template('achievementSearch.html',title=searchFor, 
+                                                        achievements=a,
+                                                        isLoggedIn=loggedIn)
+    
+    if request.method == 'GET':
+        searchFor = ''
         a = databaseAccess.getAllAchievements(conn)
-    else:
-        a = databaseAccess.getAchievements(conn,title)
 
-    return render_template('achievementSearch.html',title=title, achievements=a)
+        return render_template('achievementSearch.html',title=searchFor,
+                                                        achievements=a,
+                                                        isLoggedIn=loggedIn,
+                                                        isReportable=)
 
 
 if __name__ == '__main__':
