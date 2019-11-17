@@ -3,7 +3,6 @@
 
 use atinney_db; -- change this when you are working please
 
-drop table if exists userform;
 drop table if exists completed;
 drop table if exists starred;
 drop table if exists user;
@@ -39,8 +38,10 @@ create table achievement(
 create table completed(
     UID int,
     AID int,
-	Primary Key (UID, AID), --(UID, AID) won't always be unique: repeatable
-	timestamp datetime,
+	Primary Key (UID, AID),
+	count int not null default 0,
+	ts timestamp DEFAULT CURRENT_TIMESTAMP
+		on update CURRENT_TIMESTAMP,
 	foreign key (UID) references user(UID)
         on update cascade
         on delete cascade
