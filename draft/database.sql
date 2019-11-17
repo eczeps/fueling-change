@@ -1,7 +1,7 @@
 -- this file sets up the 'database' for the 'Fueling-Change App'
 -- The database consists of tables: 
 
-use atinney_db; -- change this when you are working please
+use egarcia2_db; -- change this when you are working please
 
 drop table if exists userform;
 drop table if exists completed;
@@ -39,7 +39,8 @@ create table achievement(
 create table completed(
     UID int,
     AID int,
-	Primary Key (UID, AID), --(UID, AID) won't always be unique: repeatable
+	Primary Key (UID, AID),
+	count int not null default 0,
 	timestamp datetime,
 	foreign key (UID) references user(UID)
         on update cascade
