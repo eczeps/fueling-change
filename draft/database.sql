@@ -3,7 +3,6 @@
 
 use egarcia2_db; -- change this when you are working please
 
-drop table if exists userform;
 drop table if exists completed;
 drop table if exists starred;
 drop table if exists user;
@@ -41,7 +40,8 @@ create table completed(
     AID int,
 	Primary Key (UID, AID),
 	count int not null default 0,
-	timestamp datetime,
+	ts timestamp DEFAULT CURRENT_TIMESTAMP
+		on update CURRENT_TIMESTAMP,
 	foreign key (UID) references user(UID)
         on update cascade
         on delete cascade
