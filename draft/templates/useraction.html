@@ -36,8 +36,8 @@
     <div class="centerme">
     <form class="bigform" id="update" method=POST action="">
         <table>
-        <tr><td class="forform"><input type="number" id="flights" placeholder="Flight Mileage" name="flights"></td></tr>
-        <tr><td class="forform"><input type="number" id="drives" placeholder="Driving Mileage" name="drives"></td></tr>
+        <tr><td class="forform"><input type="number" id="flights" placeholder="Annual Flight Mileage" name="flights"></td></tr>
+        <tr><td class="forform"><input type="number" id="drives" placeholder="Monthly Driving Mileage" name="drives"></td></tr>
         
         <tr><td class="forform"><fieldset>
             <legend>Car Type</legend>
@@ -56,7 +56,12 @@
             </fieldset>
         </td></tr>
 
-        <tr><td class="forform"><input type="number" id="meats" placeholder="Meat Meals per Week" name="meats"></td></tr>
+        <tr><td class="forform"><input type="number" id="lamb" placeholder="Lamb Servings per Week" name="lamn"></td></tr>
+        <tr><td class="forform"><input type="number" id="beef" placeholder="Beef Servings per Week" name="beef"></td></tr>
+        <tr><td class="forform"><input type="number" id="cheese" placeholder="Cheese Servings per Week" name="cheese"></td></tr>
+        <tr><td class="forform"><input type="number" id="pork" placeholder="Pork Servings per Week" name="pork"></td></tr>
+        <tr><td class="forform"><input type="number" id="turkey" placeholder="Turkey Servings per Week" name="turkey"></td></tr>
+        <tr><td class="forform"><input type="number" id="chicken" placeholder="Chicken Servings per Week" name="chicken"></td></tr>
         <tr><td class="forform"><input type="number" id="laundry" placeholder="Laundry per Week" name="laundry"></td></tr>
 
         <tr><td class="forform"><fieldset>
@@ -75,6 +80,10 @@
                 </label>
                 </fieldset>
             </td></tr>
+
+        <tr><td class="forform">
+            <button id="updatebtn" type="submit" name="submit" value="updateInfo">Submit!</button>
+        </td></tr>
 
         </table>
     </form>

@@ -2,7 +2,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify
                    )
 import dbi
-currDB = 'atinney_db'
+currDB = 'eczepiel_db'
 # change this when you want to work on your account
 # we have to figure out later how to make a db that we all have access to
 
@@ -114,10 +114,23 @@ def getUser(conn, UID):
     '''Returns user information, as a dictionary.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select UID,first_Name,last_Name,footprint,
-                    flights,driving,meat,laundry from user
+    curs.execute('''select * from user
                     where UID=%s''', [UID])
     return curs.fetchone()
+
+def updateUserInfo(conn, UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry):
+    curs = dbi.dictCursor(conn)
+    curs.execute('''update user 
+                            set miles_flown=%s, 
+                            miles_driven=%s,
+                            servings_lamb=%s,
+                            servings_beef=%s,
+                            servings_cheese=%s,
+                            servings_pork=%s,
+                            servings_turkey=%s,
+                            servings_chicken=%s,
+                            laundry=%s
+                    where UID=%s''', [UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry])
 
 
 

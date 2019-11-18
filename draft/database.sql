@@ -1,7 +1,7 @@
 -- this file sets up the 'database' for the 'Fueling-Change App'
 -- The database consists of tables: 
 
-use atinney_db; -- change this when you are working please
+use eczepiel_db; -- change this when you are working please
 
 drop table if exists completed;
 drop table if exists starred;
@@ -17,9 +17,14 @@ Create table user(
 	password varchar(30),
 	-- had to condense user and userform since can't have
 	-- userform use UID as a primary key
-	flights int,
-	driving int,
-	meat int,
+	miles_flown int,
+	miles_driven int,
+	servings_lamb int,
+	servings_beef int,
+	servings_cheese int,
+	servings_pork int,
+	servings_turkey int,
+	servings_chicken int,
 	laundry int,
 	Primary key (UID)
 );

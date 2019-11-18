@@ -123,7 +123,9 @@ def useract(user):
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == loggedIn) #boolean
-
+    if request.method == "POST":
+        #take data user inputted to the form and put it in the database before re-rendering
+        databaseAccess.updateUserInfo(conn, UID, request.form['flights'], request.form['drives'], request.form['lamb'], request.form['beef'], request.form['cheese'], request.form['pork'], request.form['turkey'], request.form['chicken'], request.form['laundry'])
     return render_template('useraction.html', isLoggedIn=loggedIn,
                                                 userURL=user,
                                                 isUser=currUser)

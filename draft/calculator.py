@@ -12,8 +12,9 @@ def plane_emissions(miles_flown):
 
 
 def meat_emissions(lamb=0, beef=0, cheese=0, pork=0, turkey=0, chicken=0):
-#if inputs are given in grams, output is also in grams. if inputs are in kg, output is in kg
-	return 39.2*lamb + 27*beef + 13.5*cheese + 12.1*pork + 10.9*turkey + 6.9*chicken
+	#each meat is multiplied by its emissions and how many grams are in each serving
+	#returns number of kilograms emitted
+	return (39.2*lamb*100 + 27*beef*85 + 13.5*cheese*43 + 12.1*pork*85 + 10.9*turkey*85 + 6.9*chicken*85)/1000
 
 
 def washer_emissions(hours_used):

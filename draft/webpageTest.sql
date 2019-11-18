@@ -1,6 +1,6 @@
 -- Run this on your db if you want to test webpages and such
 
-use egarcia2_db;
+use eczepiel_db;
 
 -- Creating a user
 insert into user(first_Name,last_Name,footprint,username,password,flights,driving,meat,laundry)
