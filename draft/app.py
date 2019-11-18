@@ -39,7 +39,8 @@ def index():
                                         userURL=user)
 
 
-@app.route('/achievements/', defaults={'searchFor': ""})
+# haven't actually implimented searching yet
+@app.route('/achievements/', methods = ['POST', 'GET'], defaults={'searchFor': ""})
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     global loggedIn
@@ -69,6 +70,9 @@ def achievement(searchFor):
                                                     userURL=user)
 
 
+@app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
+# Need to redirect it for the above but not going to do it yet
+# redirect to /profile/searchedfirstname-searchedlastname-searchedUID
 @app.route('/profile/<user>/', methods=['POST', 'GET'])
 def profile(user):
     global loggedIn
@@ -80,7 +84,6 @@ def profile(user):
 
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == loggedIn) #boolean
-    print(currUser)
 
     
     return render_template('profile.html',  title=titleString,

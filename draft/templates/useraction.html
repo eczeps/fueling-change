@@ -1,0 +1,53 @@
+{% extends "main.html" %} 
+<!-- Three different load cases: -->
+<!-- (1) User pressed report button on profile page -->
+<!-- (2) User pressed statistics button on profile page -->
+<!-- (3) User pressed find user button on profile page -->
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+            {% if isLoggedIn and isUser and request.form['submit'] != 'userSearch' %} <!-- hidden until login -->
+                <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% elif isLoggedIn %}
+                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block body %}
+    {% if request.form['submit'] == 'report' %}
+    <!-- THIS IS WHERE THE USER CAN INSERT SELF-REPORTED INFORMATION -->
+    <!-- success should send them back to the main profile but idk how yet -->
+    <!-- could do a post but then all the information would end up in the url -->
+    <!-- and we'd loose the firstname-lastname-UID format -->
+    <form id="search" method=POST action="/profile/">
+        <table>
+        <tr><td class="forform"><button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button></td>
+        <td class="forform"><button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button></td></tr>
+
+        <tr><td><input id="searchterm" placeholder="Search" name="searchterm"></td>
+        <td><button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button></td></tr>
+        <!-- statistics also includes achievements -->
+        </table>
+    </form>
+
+
+    {% elif request.form['submit'] == 'stats' %}
+    <!-- THIS IS WHERE THE USER CAN VIEW THEIR STATISTICS AND ACHIEVEMENTS -->
+    
+
+    {% else %}
+    <!-- THIS IS WHERE THE USER CAN SEARCH FOR OTHER USERS -->
+    <!-- this submission takes them to that user's statistics page automatically -->
+    <!-- if user doesn't exist, remain on main profile page and flash situation -->
+
+    {% endif %}

@@ -13,6 +13,7 @@
                 <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
             {% elif isLoggedIn %}
+                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->
                 <li><a href="/login/">Login</a></li>
@@ -21,41 +22,34 @@
     </div>
 {% endblock %}
 
+
 {% block body %}
-    <h1>Hi {{title}}</h1>
-    
-    <p>
-        What would you like to do today?
-    </p>
+{% if isUser %}
+    <!-- (1) their own account and logged in -->
+    <h1>Hi {{title}}</h1> 
+    <p>What would you like to do today?</p>
 
-    {% if isLoggedIn != None %}
-        <form id="search" method=POST action="/profile/">
-            <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
-            <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button>
-            <!-- statistics also includes achievements -->
-        </form>
 
-        <p><button id="userFind" class="report-button">Search for User!</button></p>
-
-        <div class="hidden">
-            <script>
-                var x = document.getElementById("hidden");
-                if(x.style.display==="none"){
-                    x.style.display = "block";
+    <form id="search" method=POST action="/useraction/{{userURL}}">
+        <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
+        <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button>
+    </form>
         
-                }
-                else{
-                    x.style.display = "none";
-                }           
-                ;
-            </script>
+    <form id="uSearch" method=POST action="/profile/">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button>
+        <!-- statistics also includes achievements -->
+    </form>
+    
 
-        <form id="search" method=POST action="/profile/">
-            <input id="searchterm" placeholder="Search" name="searchterm">
-            <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Go!</button>
-        </form>
-        </div>
-    {% endif %}
+
+{% else %}
+    <!-- (2) another account and logged in or (3) any account and logged off -->
+    <!-- the key difference between these is the navigation bar -->
+    <!-- this shows the statistics page automatically -->
+    <h1>Viewing {{title}}'s Achievements</h1>
+
+{% endif %}
 {% endblock %}
 
 {% block JSJQ %}

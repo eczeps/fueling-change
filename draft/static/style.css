@@ -25,16 +25,18 @@ H1 {
 	font-style: italic;
 }
 
-form,.large{
+form{
     display: inline-block;
     border: 2px solid var(--blue);
     padding: 2ex;
     border-radius: 2ex;
     margin-top: 30px;
+    width: 300px;
+    text-align: center;
 }
 
-.special {
-    border: none;
+.long {
+    margin-bottom: 20px;
 }
 
 [type=submit] {
@@ -109,6 +111,6 @@ th {
     min-width: 100px;
 }
 
-th,td {
+th, td {
     text-align: center;
 }
