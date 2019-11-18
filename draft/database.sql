@@ -1,7 +1,7 @@
 -- this file sets up the 'database' for the 'Fueling-Change App'
 -- The database consists of tables: 
 
-use atinney_db; -- change this when you are working please
+use egarcia2_db; -- change this when you are working please
 
 drop table if exists completed;
 drop table if exists starred;

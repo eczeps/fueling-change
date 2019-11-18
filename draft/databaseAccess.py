@@ -2,7 +2,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify
                    )
 import dbi
-currDB = 'atinney_db'
+currDB = 'egarcia2_db'
 # change this when you want to work on your account
 # we have to figure out later how to make a db that we all have access to
 
