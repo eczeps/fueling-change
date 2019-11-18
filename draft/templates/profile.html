@@ -1,21 +1,26 @@
 {% extends "main.html" %} 
-<!-- Three different load cases: -->
+<!-- Four different load cases: -->
 <!-- (1) Their account and user logged IN -->
 <!-- (2) Another account and user logged IN -->
-<!-- (3) Any account and user logged OFF -->
+<!-- (3) User logged OFF and not searched yet -->
+<!-- (4) User logged OFF and after successful search -->
 
 {% block navigation %}
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/achievements/">Search Achievements</a></li>
-            {% if isLoggedIn and isUser %} <!-- hidden until login -->
+            {% if isUser and request.method == "GET" %} <!-- hidden until login -->
                 <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
-            {% elif isLoggedIn %}
-                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
+            {% elif isUser %} <!-- hidden until login -->
+                <li><a class="halfactive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% elif isLoggedIn != None %}
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Login</a></li>
             {% endif %}
         </ul>
@@ -25,37 +30,111 @@
 
 {% block body %}
 {% if isUser %}
-    <!-- (1) their own account and logged in -->
-    <h1>Hi {{title}}</h1> 
-    <p>What would you like to do today?</p>
+    {% if request.method == "GET" %}
+        <!-- (1) their own account and logged in -->
+        <h1>Hi {{title}}</h1> 
+        <p>What would you like to do today?</p>
 
+        <form id="reporting" method=POST action="/useraction/{{userURL}}/">
+            <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
+        </form>
 
-    <form id="search" method=POST action="/useraction/{{userURL}}">
-        <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
-        <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button>
-    </form>
+        <form id="achieving" method=POST action="/profile/{{userURL}}/">
+            <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View My Statistics</button>
+            <!-- statistics also includes achievements -->
+        </form>
         
-    <form id="uSearch" method=POST action="/profile/">
-        <input id="searchterm" placeholder="Search" name="searchterm">
-        <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button>
-        <!-- statistics also includes achievements -->
-    </form>
-    
+        <form id="uSearch" method=POST action="/useraction/">
+            <input id="searchterm" placeholder="Search" name="searchterm">
+            <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search Users</button>
+        </form>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    {% elif request.method == "POST" %}
+        
+        <h1>Viewing {{title}}'s Achievements</h1>
+        <!-- user statistics, percentiles, and footprint -->
+        <!-- use a class="exlong" for whatever the largest element is -->
+        
+        <!-- these are working, inspect to see data-tt -->
+        <!-- completed achievements -->
+        <h2><u>Completed Achievements</u></h2>
+        <table class="exlong" id="completedAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Count</th>
+            </tr>
+            
+            {% for achievement in compAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+                <td class="count">{{achievement['count']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- starred achievements -->
+        <h2><u>Starred Achievements</u></h2>
+        <table id="starredAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+            
+            {% for achievement in starAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    {% endif %}
 
 
-{% else %}
-    <!-- (2) another account and logged in or (3) any account and logged off -->
+<!-- ############################################### -->
+{% elif isLoggedIn != None or searched == True %}
+    <!-- (2) another account and logged in -->
+    <!-- (4) successful search for user -->
     <!-- the key difference between these is the navigation bar -->
     <!-- this shows the statistics page automatically -->
     <h1>Viewing {{title}}'s Achievements</h1>
 
-{% endif %}
-{% endblock %}
+    <!-- other user statistics, percentiles, and footprint -->
+        
+    <!-- idk if this works -->
+    <!-- completed achievements only -->
+    <h2><u>Completed Achievements</u></h2>
+    <table id="completedAchieves">
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th class="short">Count</th>
+        </tr>
+        
+        {% for achievement in compAchis %}
+        {% set aID = achievement['AID'] %}
+        <tr data-tt="{{aID}}">
+            <td class="title">{{achievement['title']}}</td>
+            <td class="description">{{achievement['description']}}</td>
+            <td class="count">{{achievement['count']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
 
-{% block JSJQ %}
-    <script>
-        $("#userFind").click(function(){
-            $('#hidden').slideDown(500);
-        });
-    </script>
+<!-- ############################################### -->
+{% else %}
+    <!-- (3) user logged off and not searched yet -->
+    <h1>Search for User</h1>
+
+    <form id="uSearch" method=POST action="/useraction/">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button>
+    </form>
+
+{% endif %}
 {% endblock %}

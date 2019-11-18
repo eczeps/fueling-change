@@ -8,10 +8,13 @@ import sys,os,random
 import databaseAccess
 
 cur = databaseAccess.currDB
+didSearch = False #used to tell apart (3) and (4) in profile.html
 loggedIn = 1
-# realistically, this will be a real user's ID
-# for now we will just set it to 1 (run makeAchievements for this to work)
-# it depends on if we want our site to remember our users
+# realistically, this will be an actual user's ID
+# for now we will just set it to 1
+# run makeAchieves and then webpageTest for this to work
+# or make None to see the unlogged in pages
+# also this should be retrieved from a session variable as well
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -76,21 +79,54 @@ def achievement(searchFor):
 @app.route('/profile/<user>/', methods=['POST', 'GET'])
 def profile(user):
     global loggedIn
-    print(user)
+    global didSearch
+    
+    #grab the user id
     UID = user.split('-')[2] #format first-lastname-UID
+
+    #get information
     conn = databaseAccess.getConn(cur)
     userInfo = databaseAccess.getUser(conn, UID)
 
-
+    #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == loggedIn) #boolean
+
+    #get achievements
+    allComps = databaseAccess.getCompAchievements(conn, UID)
+    allStars = databaseAccess.getStarAchievements(conn, UID)
 
     
     return render_template('profile.html',  title=titleString,
                                                 isLoggedIn=loggedIn,
                                                 userURL=user,
-                                                isUser=currUser)
+                                                isUser=currUser,
+                                                searched=didSearch,
+                                                compAchis=allComps,
+                                                starAchis=allStars)
 
+
+# user searching not implimented yet
+@app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
+@app.route('/useraction/<user>/', methods=['POST', 'GET'])
+def useract(user):
+    global loggedIn
+    global didSearch
+    
+    #grab the user id
+    UID = user.split('-')[2] #format first-lastname-UID
+
+    #get information
+    conn = databaseAccess.getConn(cur)
+    userInfo = databaseAccess.getUser(conn, UID)
+
+    #variables for formatting template
+    titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+    currUser = (int(UID) == loggedIn) #boolean
+
+    return render_template('useraction.html', isLoggedIn=loggedIn,
+                                                userURL=user,
+                                                isUser=currUser)
 
 
 if __name__ == '__main__':

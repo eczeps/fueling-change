@@ -2,7 +2,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify
                    )
 import dbi
-currDB = 'egarcia2_db'
+currDB = 'atinney_db'
 # change this when you want to work on your account
 # we have to figure out later how to make a db that we all have access to
 
@@ -39,6 +39,28 @@ def getAllAchievements(conn):
     curs = dbi.dictCursor(conn)
     curs.execute('''select AID, title, description, isRepeatable, isSelfReport
                     from achievement''')
+    return curs.fetchall()
+
+def getCompAchievements(conn, UID):
+    '''Returns the AID, title, description, and count of this user's
+    completed achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    #also need to do join for count here
+    curs.execute('''select AID
+                    from completed
+                    where UID=%s''', [UID])
+    return curs.fetchall()
+#for the one above and below need to do a join to get title
+#and description but not in the mood to do that rn
+def getStarAchievements(conn, UID):
+    '''Returns the AID, title, and description of this user's
+    starred achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select AID
+                    from starred
+                    where UID=%s''', [UID])
     return curs.fetchall()
 
 def getIsRepeatable(conn, AID):

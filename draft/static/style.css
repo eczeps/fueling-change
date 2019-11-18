@@ -19,24 +19,38 @@ H1 {
     font-size: 200%;
 }
 
+H2 {
+    color: var(--dark-green);
+    text-align: center;
+}
+
 #flashes { 
     color: red;
     font-size: large;
 	font-style: italic;
 }
 
-form{
+form {
     display: inline-block;
     border: 2px solid var(--blue);
     padding: 2ex;
     border-radius: 2ex;
     margin-top: 30px;
-    width: 300px;
+    width: 250px;
     text-align: center;
+}
+
+.exlong {
+    margin-bottom: 100px;
 }
 
 .long {
     margin-bottom: 20px;
+}
+
+/* this isn't working idk why */
+.short {
+    max-width: 20px;
 }
 
 [type=submit] {
@@ -80,14 +94,27 @@ li a {
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
+    border-bottom: 10px solid var(--blue);
 }
   
 li a:hover:not(.active) {
     background-color: var(--dark-green);
+    border-bottom: 10px solid var(--dark-green);
 }
   
 .active {
     background-color: var(--dark-green);
+    border-bottom: 10px solid var(--dark-green);
+}
+
+.halfactive {
+    background-color: var(--blue);
+    border-bottom: 10px solid var(--dark-green);
+}
+
+.quarteractive {
+    background-color: var(--blue);
+    border-bottom: 10px dotted var(--dark-green);
 }
 
 /* divs */

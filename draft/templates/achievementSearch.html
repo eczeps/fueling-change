@@ -42,9 +42,9 @@
         <tr>
             <th>Title</th>
             <th>Description</th>
-            <th class="small">Repeatable</th>
+            <th class="short">Repeatable</th>
             {% if isLoggedIn != None %}
-                <th class="small">Self-Report</th>
+                <th class="short">Self-Report</th>
             {% endif %}
         </tr>
         
@@ -52,16 +52,16 @@
         {% for achievement in achievements %}
         {% set aID = achievement['AID'] %}
         <tr data-tt="{{aID}}">
-            <td class="title">{{achievement['title']}}</td>
-            <td class="description">{{achievement['description']}}</td>
-            <td class="repeatable">
+            <td id="title">{{achievement['title']}}</td>
+            <td id="description">{{achievement['description']}}</td>
+            <td class="short" id="repeatable">
                 {% if achievement['isRepeatable'] == 1 %}
                     Yes
                 {% else %}
                     No
                 {% endif %}</td>
             {% if isLoggedIn != None %} <!-- and dbAccess.determineIsReportable(DB, aID, isLoggedIn) -->
-                <td><button class="report-button">Go!</button></td>
+                <td class="short"><button class="report-button">Go!</button></td>
             {% endif %}
         </tr>
         {% endfor %}
