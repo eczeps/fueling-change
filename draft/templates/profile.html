@@ -36,17 +36,17 @@
         <p>What would you like to do today?</p>
 
         <form id="reporting" method=POST action="/useraction/{{userURL}}/">
-            <button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button>
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="report">Report Achievements</button>
         </form>
 
         <form id="achieving" method=POST action="/profile/{{userURL}}/">
-            <button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View My Statistics</button>
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="stats">View My Statistics</button>
             <!-- statistics also includes achievements -->
         </form>
         
         <form id="uSearch" method=POST action="/useraction/">
             <input id="searchterm" placeholder="Search" name="searchterm">
-            <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search Users</button>
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
         </form>
 
     <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
@@ -58,6 +58,7 @@
         
         <!-- these are working, inspect to see data-tt -->
         <!-- completed achievements -->
+        <div class="centerme">
         <h2><u>Completed Achievements</u></h2>
         <table class="exlong" id="completedAchieves">
             <tr>
@@ -92,7 +93,7 @@
             </tr>
             {% endfor %}
         </table>
-
+        </div> <!-- end of centerme div -->
     {% endif %}
 
 
@@ -108,12 +109,13 @@
         
     <!-- idk if this works -->
     <!-- completed achievements only -->
+    <div class="centerme">
     <h2><u>Completed Achievements</u></h2>
     <table id="completedAchieves">
         <tr>
             <th>Title</th>
             <th>Description</th>
-            <th class="short">Count</th>
+            <th class="small">Count</th>
         </tr>
         
         {% for achievement in compAchis %}
@@ -125,6 +127,7 @@
         </tr>
         {% endfor %}
     </table>
+    </div> <!-- end of centerme div -->
 
 <!-- ############################################### -->
 {% else %}
@@ -133,7 +136,7 @@
 
     <form id="uSearch" method=POST action="/useraction/">
         <input id="searchterm" placeholder="Search" name="searchterm">
-        <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button>
+        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search for User</button>
     </form>
 
 {% endif %}

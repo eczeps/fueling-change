@@ -40,17 +40,20 @@ form {
     text-align: center;
 }
 
+.bigform {
+    width: 500px;
+}
+
+.space {
+    margin-right: 10px;
+}
+
 .exlong {
     margin-bottom: 100px;
 }
 
 .long {
     margin-bottom: 20px;
-}
-
-/* this isn't working idk why */
-.short {
-    max-width: 20px;
 }
 
 [type=submit] {
@@ -114,7 +117,7 @@ li a:hover:not(.active) {
 
 .quarteractive {
     background-color: var(--blue);
-    border-bottom: 10px dotted var(--dark-green);
+    border-bottom: 10px solid var(--dark-blue);
 }
 
 /* divs */
@@ -129,15 +132,31 @@ li a:hover:not(.active) {
     padding-left: 20px;
 }
 
+.centerme {
+    text-align: center;
+}
+
 /* For the table */
+table {
+    margin-left:auto; 
+    margin-right:auto;
+}
+
 th {
-    min-width: 300px;
+    width: 300px;
+    font-size: 110%;
 }
 
 .small {
-    min-width: 100px;
+    width: 100px;
 }
 
 th, td {
     text-align: center;
+    overflow: hidden;
+}
+
+/* idk why this isn't working*/
+.forform {
+    margin: 10px;
 }

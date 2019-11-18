@@ -29,29 +29,73 @@
 {% block body %}
     {% if request.form['submit'] == 'report' %}
     <!-- (1) THIS IS WHERE THE USER CAN INSERT SELF-REPORTED INFORMATION -->
-    <!-- success sends them back to the main profile -->
-    <h1>Add Achievement</h1>
-    <form id="search" method=POST action="/profile/{{userURL}}/">
-        <table>
-        <tr><td class="forform"><button id="reportbtn" class="report-button" type="submit" name="report" value="report">Report Achievements</button></td>
-        <td class="forform"><button id="reportbtn" class="report-button" type="submit" name="achieve" value="stats">View Statistics</button></td></tr>
+    <!-- empty fields should be ignored -->
 
-        <tr><td><input id="searchterm" placeholder="Search" name="searchterm"></td>
-        <td><button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button></td></tr>
+    <h1>Update Information</h1>
+    <!-- How they add more data -->
+    <div class="centerme">
+    <form class="bigform" id="update" method=POST action="">
+        <table>
+        <tr><td class="forform"><input type="number" id="flights" placeholder="Flight Mileage" name="flights"></td></tr>
+        <tr><td class="forform"><input type="number" id="drives" placeholder="Driving Mileage" name="drives"></td></tr>
+        
+        <tr><td class="forform"><fieldset>
+            <legend>Car Type</legend>
+            <label class="space">
+                <input required type="radio" name="cartype" value="gas">
+                GAS
+            </label>
+            <label class="space">
+                <input required type="radio" name="cartype" value="hybrid">
+                HYBRID
+            </label>
+            <label>
+                <input required type="radio" name="cartype" value="electric">
+                ELECTRIC
+            </label>
+            </fieldset>
+        </td></tr>
+
+        <tr><td class="forform"><input type="number" id="meats" placeholder="Meat Meals per Week" name="meats"></td></tr>
+        <tr><td class="forform"><input type="number" id="laundry" placeholder="Laundry per Week" name="laundry"></td></tr>
+
+        <tr><td class="forform"><fieldset>
+            <legend>Typical Water Temperature</legend>
+                <label class="space">
+                    <input required type="radio" name="watertemp" value="cold">
+                    COLD
+                </label>
+                <label class="space">
+                    <input required type="radio" name="watertemp" value="warm">
+                    WARM
+                </label>
+                <label>
+                    <input required type="radio" name="watertemp" value="hot">
+                    HOT
+                </label>
+                </fieldset>
+            </td></tr>
+
         </table>
     </form>
-    
+    </div> <!-- end of centerme div -->
+    <!-- list of achievements they haven't done but are self-report -->
+    <!-- prolly need to do a join for this gah! -->
+
+
+    <!-- ############################################### -->
     {% else %}
     <!-- (2) THIS IS WHERE THE USER CAN SEARCH FOR OTHER USERS -->
     <!-- this submission shows a list of linked users that match the search -->
     <!-- if user doesn't exist, list is empty and flash to tell them this -->
     <!-- link format: /profile/searchedfirstname-searchedlastname-searchedUID -->
-    <h1>Search for User</h1>
+    
+    <h1>Search Users</h1>
 
     <!-- they can search again if they want -->
     <form id="uSearch" method=POST action="/useraction/{{userURL}}/">
         <input id="searchterm" placeholder="Search" name="searchterm">
-        <button id="reportbtn" class="report-button" type="submit" name="userSearch" value="userSearch">Search for User</button>
+        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
     </form>
 
     <!-- set the searched variable true if people found -->
