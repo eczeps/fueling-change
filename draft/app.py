@@ -105,6 +105,28 @@ def profile(user):
                                                 compAchis=allComps,
                                                 starAchis=allStars)
 
+'''route to handle user updating or entering new data'''
+@app.route('/useraction/report/<user>/', methods=['POST'])
+def reportData(user):
+    global loggedIn
+    global didSearch
+    UID = user.split('-')[2] #format first-lastname-UID
+    #get information
+    conn = databaseAccess.getConn(cur)
+    #take data user inputted to the form and put it in the database before re-rendering
+    print(request.form)
+    databaseAccess.updateUserInfo(conn, UID, 
+                                    request.form.get('flights'), 
+                                    request.form['drives'], 
+                                    request.form['lamb'], 
+                                    request.form['beef'], 
+                                    request.form['cheese'], 
+                                    request.form['pork'], 
+                                    request.form['turkey'], 
+                                    request.form['chicken'], 
+                                    request.form['laundry'])
+    return(redirect(url_for('/useraction/' + user + '/')))
+
 
 # user searching not implimented yet
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
@@ -123,9 +145,6 @@ def useract(user):
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == loggedIn) #boolean
-    if request.method == "POST":
-        #take data user inputted to the form and put it in the database before re-rendering
-        databaseAccess.updateUserInfo(conn, UID, request.form['flights'], request.form['drives'], request.form['lamb'], request.form['beef'], request.form['cheese'], request.form['pork'], request.form['turkey'], request.form['chicken'], request.form['laundry'])
     return render_template('useraction.html', isLoggedIn=loggedIn,
                                                 userURL=user,
                                                 isUser=currUser)
