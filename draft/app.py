@@ -28,7 +28,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    global loggedIn
+    global loggedIn 
     conn = databaseAccess.getConn(cur)
     user = ""
 
@@ -125,7 +125,7 @@ def reportData(user):
                                     request.form['turkey'], 
                                     request.form['chicken'], 
                                     request.form['laundry'])
-    return(redirect(url_for('/useraction/' + user + '/')))
+    return(redirect('/useraction/' + user + '/'))
 
 
 # user searching not implimented yet
