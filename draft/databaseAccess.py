@@ -2,6 +2,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify
                    )
 import dbi
+import calculator as calculator
 currDB = 'eczepiel_db'
 # change this when you want to work on your account
 # we have to figure out later how to make a db that we all have access to
@@ -131,6 +132,31 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, cheese, pork, turkey
                             servings_chicken=%s,
                             laundry=%s
                     where UID=%s''', [UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry])
+
+
+def calculateUserFootprint(conn, UID):
+    curs = dbi.dictCursor(conn)
+    curs.execute(''' select 
+                        miles_flown,
+                        miles_driven,
+                        servings_lamb,
+                        servings_beef,
+                        servings_cheese,
+                        servings_pork,
+                        servings_turkey,
+                        servings_chicken,
+                        laundry
+                    from user where UID = %s
+                ''', [UID])
+    userData = curs.fetchone()
+    print('userData in calculateUserFootprint: ', str(userData))
+    total = calculator.plane_emissions(userData['miles_flown']) \
+            + calculator.car_emissions(userData['miles_driven']) \
+            + calculator.meat_emissions(userData['servings_lamb'], userData['servings_beef'], userData['servings_cheese'], userData['servings_pork'], userData['servings_turkey'], userData['servings_chicken']) \
+            + calculator.washer_emissions(userData['laundry']) \
+            + calculator.dryer_emissions(userData['laundry'])
+    return total
+
 
 
 

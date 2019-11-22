@@ -33,6 +33,7 @@
     {% if request.method == "GET" %}
         <!-- (1) their own account and logged in -->
         <h1>Hi {{title}}</h1> 
+        <p>Your current emissions are {{emissions}} kilograms of carbon dioxide per year</p>
         <p>What would you like to do today?</p>
 
         <form id="reporting" method=POST action="/useraction/{{userURL}}/">

@@ -96,8 +96,11 @@ def profile(user):
     allComps = databaseAccess.getCompAchievements(conn, UID)
     allStars = databaseAccess.getStarAchievements(conn, UID)
 
+    #calculate emissions
+    emissions = databaseAccess.calculateUserFootprint(conn, UID)
     
     return render_template('profile.html',  title=titleString,
+                                                emissions = emissions,
                                                 isLoggedIn=loggedIn,
                                                 userURL=user,
                                                 isUser=currUser,
