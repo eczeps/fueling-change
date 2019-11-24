@@ -12,6 +12,12 @@ values(1,1);
 insert into completed(UID,AID)
 values(1,2);
 
+insert into completed(UID,AID)
+values(1,7);
+
+insert into completed(UID,AID)
+values(1,9);
+
 -- Inserting into starred
 insert into starred(UID,AID)
 values(1,3);

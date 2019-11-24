@@ -3,7 +3,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    )
 import dbi
 import calculator as calculator
-import sys
+import sys,math
 # the database to use:
 d = "atinney_db"
 # script testingSetup.sh replaces this like so:
@@ -29,10 +29,11 @@ def getAchievements(conn, searchFor):
     curs.execute('''select AID, title, description, isRepeatable, isSelfReport
                     from achievement
                     where title like %s
-                    or description is like %s
-                    or isRepeatable is like %s
-                    or isSelfReport is like %s''',
-                    [searchFor, searchFor, searchFor, searchFor])
+                    or description like %s
+                    or isRepeatable like %s
+                    or isSelfReport like %s''',
+                    [searchFor,searchFor,searchFor,searchFor])
+    
     return curs.fetchall()
 
 def getAllAchievements(conn):
@@ -40,7 +41,7 @@ def getAllAchievements(conn):
     of all achievements, as a list of dictionaries.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select AID, title, isRepeatable, isSelfReport
+    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
                     from achievement''')
     return curs.fetchall()
 
@@ -50,8 +51,10 @@ def getCompAchievements(conn, UID):
     '''
     curs = dbi.dictCursor(conn)
     #also need to do join for count here
-    curs.execute('''select AID
+    curs.execute('''select completed.AID,title,description,count
                     from completed
+                    join achievement
+                    on achievement.AID=completed.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
 #for the one above and below need to do a join to get title
@@ -61,8 +64,10 @@ def getStarAchievements(conn, UID):
     starred achievements, as a list of dictionaries.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select AID
+    curs.execute('''select starred.AID,title,description
                     from starred
+                    join achievement
+                    on achievement.AID=starred.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
 
@@ -155,7 +160,8 @@ def calculateUserFootprint(conn, UID):
     return total
 
 
-
+def prettyRound(number):
+    return math.floor(round(number,0))
 
 # ==========================================================
 # This starts the ball rolling, *if* the file is run as a

@@ -1,5 +1,4 @@
 {% extends "main.html" %}
-<!-- import "databaseAccess.py" as dbAccess -->
 
 {% block navigation %}
     <div id="navigation">
@@ -18,8 +17,8 @@
 
 
 {% block search %}
-<form id="search" method=POST action="/achievements/">
-    <input id="searchterm" placeholder="Search" name="searchterm">
+<form id="searchTop" method=POST action="/achievements/">
+    <input id="searchtermTop" placeholder="Search" name="searchterm">
     <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
 </form>
 {% endblock %}
@@ -70,6 +69,9 @@
                 <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
                 {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %}
                     <td class="small"><button class="report-button">Go!</button></td>
+                <!-- user doesn't have it and it's self-reportable -->
+                {% elif not aID in reps and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
                 {% endif %}
             {% endif %}
         </tr>
@@ -79,8 +81,8 @@
 
 
 {% block footerSearch %}
-    <form id="search" method=POST action="/achievements/">
-        <input id="searchterm" placeholder="Search" name="searchterm">
+    <form id="searchBottom" method=POST action="/achievements/">
+        <input id="searchtermBottom" placeholder="Search" name="searchterm">
         <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
     </form>
 {% endblock %}

@@ -4,10 +4,10 @@ from flask import (Flask, render_template, make_response, url_for, request,
 from werkzeug import secure_filename
 app = Flask(__name__)
 
-import sys,os,random
+import sys,os,random,math
 import databaseAccess
 
-cur = databaseAccess.d
+currDB = databaseAccess.d
 didSearch = False #used to tell apart (3) and (4) in profile.html
 loggedIn = 1
 # realistically, this will be an actual user's ID
@@ -29,7 +29,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 @app.route('/')
 def index():
     global loggedIn 
-    conn = databaseAccess.getConn(cur)
+    conn = databaseAccess.getConn(currDB)
     user = ""
 
     if loggedIn != None:
@@ -47,7 +47,7 @@ def index():
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     global loggedIn
-    conn = databaseAccess.getConn(cur)
+    conn = databaseAccess.getConn(currDB)
     user = ""
     rep = []
 
@@ -58,13 +58,14 @@ def achievement(searchFor):
         # rep is short for reportable
         rep = databaseAccess.getReportedAchieves(conn, loggedIn) 
 
+    searchFor = request.form.get('searchterm')
     if request.method == 'POST':
         a = []
         if(searchFor==""):
             a = databaseAccess.getAllAchievements(conn)
         else:
             a = databaseAccess.getAchievements(conn,searchFor)
-    
+
     if request.method == 'GET':
         searchFor = ''
         a = databaseAccess.getAllAchievements(conn)
@@ -88,7 +89,7 @@ def profile(user):
     UID = user.split('-')[2] #format first-lastname-UID
 
     #get information
-    conn = databaseAccess.getConn(cur)
+    conn = databaseAccess.getConn(currDB)
     userInfo = databaseAccess.getUser(conn, UID)
 
     #variables for formatting template
@@ -100,10 +101,11 @@ def profile(user):
     allStars = databaseAccess.getStarAchievements(conn, UID)
 
     #calculate emissions
-    emissions = databaseAccess.calculateUserFootprint(conn, UID)
+    emissionsRAW = databaseAccess.calculateUserFootprint(conn, UID)
+    emissions = databaseAccess.prettyRound(emissionsRAW)
     
     return render_template('profile.html',  title=titleString,
-                                                emissions = emissions,
+                                                emissions = format(emissions, ','),
                                                 isLoggedIn=loggedIn,
                                                 userURL=user,
                                                 isUser=currUser,
@@ -118,7 +120,7 @@ def reportData(user):
     global didSearch
     UID = user.split('-')[2] #format first-lastname-UID
     #get information
-    conn = databaseAccess.getConn(cur)
+    conn = databaseAccess.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering
     print(request.form)
     databaseAccess.updateUserInfo(conn, UID, 
@@ -145,7 +147,7 @@ def useract(user):
     UID = user.split('-')[2] #format first-lastname-UID
 
     #get information
-    conn = databaseAccess.getConn(cur)
+    conn = databaseAccess.getConn(currDB)
     userInfo = databaseAccess.getUser(conn, UID)
 
     #variables for formatting template
