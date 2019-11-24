@@ -1,10 +1,9 @@
--- Run this on your db if you want to test webpages and such
-
-use eczepiel_db;
-
 -- Creating a user
-insert into user(first_Name,last_Name,footprint,username,password,flights,driving,meat,laundry)
-values ('alissa','tinney',4000.0,'atinney','abc',5,3,20,30);
+insert into user(first_Name,last_Name,footprint,username,password,
+                miles_flown,miles_driven,servings_lamb,servings_beef,
+                servings_cheese,servings_pork,servings_chicken,
+                servings_turkey,laundry)
+values ('alissa','tinney',4000.0,'atinney','abc',5,3,20,30,2,4,50,30,5);
 
 -- Inserting into completed
 insert into completed(UID,AID)
@@ -24,7 +23,7 @@ insert into starred(UID,AID)
 values(1,5);
 
 -- Showing results
-select * from user;
-select * from achievement;
-select * from completed;
-select * from starred;
+-- select * from user;
+-- select * from achievement;
+-- select * from completed;
+-- select * from starred;

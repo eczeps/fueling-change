@@ -7,7 +7,7 @@ app = Flask(__name__)
 import sys,os,random
 import databaseAccess
 
-cur = databaseAccess.currDB
+cur = databaseAccess.d
 didSearch = False #used to tell apart (3) and (4) in profile.html
 loggedIn = 1
 # realistically, this will be an actual user's ID
@@ -49,11 +49,14 @@ def achievement(searchFor):
     global loggedIn
     conn = databaseAccess.getConn(cur)
     user = ""
+    rep = []
 
     if loggedIn != None:
         userInfo = databaseAccess.getUser(conn, loggedIn)
         user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
         user += '-' + str(userInfo['UID'])
+        # rep is short for reportable
+        rep = databaseAccess.getReportedAchieves(conn, loggedIn) 
 
     if request.method == 'POST':
         a = []
@@ -69,7 +72,7 @@ def achievement(searchFor):
     return render_template('achievementSearch.html',title=searchFor,
                                                     achievements=a,
                                                     isLoggedIn=loggedIn,
-                                                    DB=cur,
+                                                    reps=rep,
                                                     userURL=user)
 
 

@@ -48,20 +48,29 @@
             {% endif %}
         </tr>
         
-        
         {% for achievement in achievements %}
         {% set aID = achievement['AID'] %}
+        {% set repeatable = achievement['isRepeatable'] %}
         <tr data-tt="{{aID}}">
             <td id="title">{{achievement['title']}}</td>
             <td id="description">{{achievement['description']}}</td>
-            <td class="small" id="repeatable">
-                {% if achievement['isRepeatable'] == 1 %}
+            <td class="small" id="repeatable"> 
+                <!-- don't use id bc it's a loop -->
+                {% if repeatable == 1 %}
                     Yes
                 {% else %}
                     No
                 {% endif %}</td>
-            {% if isLoggedIn != None %} <!-- and dbAccess.determineIsReportable(DB, aID, isLoggedIn) -->
-                <td class="small"><button class="report-button">Go!</button></td>
+            
+            
+            {% if isLoggedIn != None %}
+                <!-- user has it, it's repeatable, and it's self-reportable -->
+                {% if aID in reps and repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
+                <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
+                {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
+                {% endif %}
             {% endif %}
         </tr>
         {% endfor %}

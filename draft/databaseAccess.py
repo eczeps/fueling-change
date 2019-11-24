@@ -3,9 +3,11 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    )
 import dbi
 import calculator as calculator
-currDB = 'eczepiel_db'
-# change this when you want to work on your account
-# we have to figure out later how to make a db that we all have access to
+import sys
+# the database to use:
+d = "atinney_db"
+# script testingSetup.sh replaces this like so:
+# $ ./testingSetup.sh atinney_db
 
 # ==========================================================
 # The functions that do most of the work.
@@ -38,7 +40,7 @@ def getAllAchievements(conn):
     of all achievements, as a list of dictionaries.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
+    curs.execute('''select AID, title, isRepeatable, isSelfReport
                     from achievement''')
     return curs.fetchall()
 
@@ -94,22 +96,17 @@ def getIsSelfReport(conn, AID):
     else:
         return False
 
-def determineIsReportable(DB, AID, UID):
-    '''Returns whether or not this achievement is reportable for
-    the given user. This is a Boolean return.
-    '''
-    conn = getConn(DB)
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select isSelfReport from completed
-                    where UID=%s
-                    and AID=%s''' [UID, AID])
-    
-    allOccurances = curs.fetchall()
-    alreadyReported = allOccurances[len(allOccurances)-1]
-    repeat = getIsRepeatable(conn, AID)
-    report = getIsSelfReport(conn, AID)
 
-    return (alreadyReported and repeat and report)
+def getReportedAchieves(conn, UID):
+    '''Returns a simple list of AIDs for all completed user achievements
+    that says if the achievement is currently reportable by the user.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select AID from completed
+                    where UID=%s''', [UID])
+
+    return list(map(lambda x: x['AID'], curs.fetchall()))
+
 
 def getUser(conn, UID):
     '''Returns user information, as a dictionary.

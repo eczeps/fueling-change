@@ -1,8 +1,5 @@
 -- this file sets up the 'database' for the 'Fueling-Change App'
 -- The database consists of tables: 
-
-use eczepiel_db; -- change this when you are working please
-
 drop table if exists completed;
 drop table if exists starred;
 drop table if exists user;

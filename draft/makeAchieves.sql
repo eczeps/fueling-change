@@ -1,8 +1,6 @@
-use egarcia2_db;
-
 -- Creating achievements
 insert into achievement(title,description)
-values ('Joined Fuelling Change!','Started their journey to lower carbon footprint');
+values ('Joined Fueling Change!','Started their journey to lower carbon footprint');
 
 insert into achievement(title,description,isRepeatable,isSelfReport)
 values ('No Meat for a Week','Do not eat meat for seven days.',1,1); -- 1 is true, 0 is false
