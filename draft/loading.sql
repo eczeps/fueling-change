@@ -1,3 +1,4 @@
+--loads potential achievements for people to reach into the database
 insert into achievement(title, description, isRepeatable, isSelfReport) 
 values ('No meat for a Week', '', 1, 1);
 

@@ -11,10 +11,9 @@ currDB = databaseAccess.d
 didSearch = False #used to tell apart (3) and (4) in profile.html
 loggedIn = 1
 # realistically, this will be an actual user's ID
-# for now we will just set it to 1
+# for now we will just set it to 1 until we implement sessions & logging in
 # run makeAchieves and then webpageTest for this to work
 # or make None to see the unlogged in pages
-# also this should be retrieved from a session variable as well
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -26,6 +25,8 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+
+'''handles the homepage route, and handles both when users are logged in and when they aren't'''
 @app.route('/')
 def index():
     global loggedIn 
@@ -42,22 +43,23 @@ def index():
                                         userURL=user)
 
 
-# haven't actually implimented searching yet
+'''handles the page where users can search for achievements and self-report them'''
 @app.route('/achievements/', methods = ['POST', 'GET'], defaults={'searchFor': ""})
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     global loggedIn
     conn = databaseAccess.getConn(currDB)
     user = ""
+    # rep is short for reportable
     rep = []
 
     if loggedIn != None:
         userInfo = databaseAccess.getUser(conn, loggedIn)
         user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
         user += '-' + str(userInfo['UID'])
-        # rep is short for reportable
         rep = databaseAccess.getReportedAchieves(conn, loggedIn) 
 
+    #if the user is searching for something, access the database to get search results
     searchFor = request.form.get('searchterm')
     if request.method == 'POST':
         a = []
@@ -66,7 +68,8 @@ def achievement(searchFor):
         else:
             a = databaseAccess.getAchievements(conn,searchFor)
 
-    if request.method == 'GET':
+    #if the user is just loading the page, show them all the achievements
+    elif request.method == 'GET':
         searchFor = ''
         a = databaseAccess.getAllAchievements(conn)
 
@@ -76,7 +79,9 @@ def achievement(searchFor):
                                                     reps=rep,
                                                     userURL=user)
 
-
+'''handles the user profile route, which displays user info
+user is NOT found using session variables; it's found based on the URL
+this will be re-implemented later when we've implemented sessions & sign in flow'''
 @app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
 # Need to redirect it for the above but not going to do it yet
 # redirect to /profile/searchedfirstname-searchedlastname-searchedUID
@@ -88,7 +93,7 @@ def profile(user):
     #grab the user id
     UID = user.split('-')[2] #format first-lastname-UID
 
-    #get information
+    #get user information
     conn = databaseAccess.getConn(currDB)
     userInfo = databaseAccess.getUser(conn, UID)
 
@@ -113,7 +118,7 @@ def profile(user):
                                                 compAchis=allComps,
                                                 starAchis=allStars)
 
-'''route to handle user updating or entering new data'''
+'''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
     global loggedIn
@@ -122,7 +127,6 @@ def reportData(user):
     #get information
     conn = databaseAccess.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering
-    print(request.form)
     databaseAccess.updateUserInfo(conn, UID, 
                                     request.form.get('flights'), 
                                     request.form['drives'], 
@@ -136,7 +140,11 @@ def reportData(user):
     return(redirect('/useraction/' + user + '/'))
 
 
-# user searching not implimented yet
+'''route to handle actions users can take from their profile, including:
+report achievements
+view statistics
+search users
+'''
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
 @app.route('/useraction/<user>/', methods=['POST', 'GET'])
 def useract(user):
