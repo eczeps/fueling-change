@@ -1,0 +1,1146 @@
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify
+                   )
+from werkzeug import secure_filename
+app = Flask(__name__)
+
+import sys,os,random,math
+import databaseAccess
+
+currDB = databaseAccess.d
+didSearch = False #used to tell apart (3) and (4) in profile.html
+loggedIn = 1
+# realistically, this will be an actual user's ID
+# for now we will just set it to 1
+# run makeAchieves and then webpageTest for this to work
+# or make None to see the unlogged in pages
+# also this should be retrieved from a session variable as well
+
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+@app.route('/')
+def index():
+    global loggedIn 
+    conn = databaseAccess.getConn(currDB)
+    user = ""
+
+    if loggedIn != None:
+        userInfo = databaseAccess.getUser(conn, loggedIn)
+        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
+        user += '-' + str(userInfo['UID'])
+
+    return render_template('main.html', title="Fueling Change",
+                                        isLoggedIn=loggedIn,
+                                        userURL=user)
+
+
+# haven't actually implimented searching yet
+@app.route('/achievements/', methods = ['POST', 'GET'], defaults={'searchFor': ""})
+@app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
+def achievement(searchFor):
+    global loggedIn
+    conn = databaseAccess.getConn(currDB)
+    user = ""
+    rep = []
+
+    if loggedIn != None:
+        userInfo = databaseAccess.getUser(conn, loggedIn)
+        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
+        user += '-' + str(userInfo['UID'])
+        # rep is short for reportable
+        rep = databaseAccess.getReportedAchieves(conn, loggedIn) 
+
+    searchFor = request.form.get('searchterm')
+    if request.method == 'POST':
+        a = []
+        if(searchFor==""):
+            a = databaseAccess.getAllAchievements(conn)
+        else:
+            a = databaseAccess.getAchievements(conn,searchFor)
+
+    if request.method == 'GET':
+        searchFor = ''
+        a = databaseAccess.getAllAchievements(conn)
+
+    return render_template('achievementSearch.html',title=searchFor,
+                                                    achievements=a,
+                                                    isLoggedIn=loggedIn,
+                                                    reps=rep,
+                                                    userURL=user)
+
+
+@app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
+# Need to redirect it for the above but not going to do it yet
+# redirect to /profile/searchedfirstname-searchedlastname-searchedUID
+@app.route('/profile/<user>/', methods=['POST', 'GET'])
+def profile(user):
+    global loggedIn
+    global didSearch
+    
+    #grab the user id
+    UID = user.split('-')[2] #format first-lastname-UID
+
+    #get information
+    conn = databaseAccess.getConn(currDB)
+    userInfo = databaseAccess.getUser(conn, UID)
+
+    #variables for formatting template
+    titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+    currUser = (int(UID) == loggedIn) #boolean
+
+    #get achievements
+    allComps = databaseAccess.getCompAchievements(conn, UID)
+    allStars = databaseAccess.getStarAchievements(conn, UID)
+
+    #calculate emissions
+    emissionsRAW = databaseAccess.calculateUserFootprint(conn, UID)
+    emissions = databaseAccess.prettyRound(emissionsRAW)
+    
+    return render_template('profile.html',  title=titleString,
+                                                emissions = format(emissions, ','),
+                                                isLoggedIn=loggedIn,
+                                                userURL=user,
+                                                isUser=currUser,
+                                                searched=didSearch,
+                                                compAchis=allComps,
+                                                starAchis=allStars)
+
+'''route to handle user updating or entering new data'''
+@app.route('/useraction/report/<user>/', methods=['POST'])
+def reportData(user):
+    global loggedIn
+    global didSearch
+    UID = user.split('-')[2] #format first-lastname-UID
+    #get information
+    conn = databaseAccess.getConn(currDB)
+    #take data user inputted to the form and put it in the database before re-rendering
+    print(request.form)
+    databaseAccess.updateUserInfo(conn, UID, 
+                                    request.form.get('flights'), 
+                                    request.form['drives'], 
+                                    request.form['lamb'], 
+                                    request.form['beef'], 
+                                    request.form['cheese'], 
+                                    request.form['pork'], 
+                                    request.form['turkey'], 
+                                    request.form['chicken'], 
+                                    request.form['laundry'])
+    return(redirect('/useraction/' + user + '/'))
+
+
+# user searching not implimented yet
+@app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
+@app.route('/useraction/<user>/', methods=['POST', 'GET'])
+def useract(user):
+    global loggedIn
+    global didSearch
+    
+    #grab the user id
+    UID = user.split('-')[2] #format first-lastname-UID
+
+    #get information
+    conn = databaseAccess.getConn(currDB)
+    userInfo = databaseAccess.getUser(conn, UID)
+
+    #variables for formatting template
+    titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+    currUser = (int(UID) == loggedIn) #boolean
+    return render_template('useraction.html', isLoggedIn=loggedIn,
+                                                userURL=user,
+                                                isUser=currUser)
+
+
+if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+        # arg, if any, is the desired port number
+        port = int(sys.argv[1])
+        assert(port>1024)
+    else:
+        port = os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+
+def car_emissions(miles_driven):
+#returns number of kilograms emitted per year given monthy mileage
+#assuming 404 grams emitted per mile on avg
+	return ((404*miles_driven)/1000)*12
+
+
+def plane_emissions(miles_flown):
+#returns the number of kilograms emitted per year given yearly mileage
+#assuming 53 pounds/mile on avg
+	return miles_flown*53*0.45359237
+
+
+def meat_emissions(lamb=0, beef=0, cheese=0, pork=0, turkey=0, chicken=0):
+	#each meat is multiplied by its emissions and how many grams are in each serving
+	#returns number of kilograms emitted per year given weekly servings
+	return ((39.2*lamb*100 + 27*beef*85 + 13.5*cheese*43 + 12.1*pork*85 + 10.9*turkey*85 + 6.9*chicken*85)/1000)*52
+
+
+def washer_emissions(hours_used):
+#returns number of kilograms emitted per year given weekly hours used
+#assumes one hour per load of laundry
+	return ((255*hours_used)/1000*0.78)*52
+
+
+def dryer_emissions(hours_used):
+#returns number of kilograms emitted
+#assumes one hour per load, and that the dryer is used for every load of washing
+	return ((2790*hours_used)/1000*0.78)*52-- this file sets up the 'database' for the 'Fueling-Change App'
+-- The database consists of tables: 
+drop table if exists completed;
+drop table if exists starred;
+drop table if exists user;
+drop table if exists achievement;
+
+Create table user(
+	UID int auto_increment,
+	first_Name varchar(30),
+	last_Name varchar(30),
+	footprint float,
+	username varchar(30),
+	password varchar(30),
+	-- had to condense user and userform since can't have
+	-- userform use UID as a primary key
+	miles_flown int,
+	miles_driven int,
+	servings_lamb int,
+	servings_beef int,
+	servings_cheese int,
+	servings_pork int,
+	servings_turkey int,
+	servings_chicken int,
+	laundry int,
+	Primary key (UID)
+);
+
+create table achievement(
+	AID int auto_increment,
+	title varchar(30),
+	description varchar(50),
+	isRepeatable boolean not null default 0,
+	isSelfReport boolean not null default 0,
+	-- boolean in mysql is tinyint(1)
+	-- 0 is false
+	Primary Key (AID)
+);
+
+create table completed(
+    UID int,
+    AID int,
+	Primary Key (UID, AID),
+	count int not null default 0,
+	ts timestamp DEFAULT CURRENT_TIMESTAMP
+		on update CURRENT_TIMESTAMP,
+	foreign key (UID) references user(UID)
+        on update cascade
+        on delete cascade
+);
+
+create table starred(
+    UID int,
+    AID int,
+	Primary Key (UID, AID),
+	foreign key (UID) references user(UID)
+        on update cascade
+        on delete cascade
+);
+insert into achievement(title, description, isRepeatable, isSelfReport) 
+values ('No meat for a Week', '', 1, 1);
+
+insert into achievement(title, description, isRepeatable, isSelfReport) 
+values ('No laundry for a Week', '', 1, 1);
+
+insert into achievement(title, description, isRepeatable, isSelfReport) 
+values ('No flights for a year', '', 1, 1);
+
+insert into achievement(title, description, isRepeatable, isSelfReport) 
+values ('No miles driven this week', '', 1, 1);-- Creating achievements
+insert into achievement(title,description)
+values ('Joined Fueling Change!','Started their journey to lower carbon footprint');
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('No Meat for a Week','Do not eat meat for seven days.',1,1); -- 1 is true, 0 is false
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Carpooled','Carpooled to Work/School.',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Vegan','Became Vegan!',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Vegetarian','Became Vegetarian',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Earthly Drying','Line-Dried the clothing',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('+1 Tree','Planted A Tree',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Electric Cars Go VROOM!','Buy an electric car.',1,1);
+
+insert into achievement(title,description,isSelfReport)
+values ('Earth Powers','Upgraded to geothermal energy.',1);
+
+insert into achievement(title,description,isSelfReport)
+values ('Solar Powers','Installed solar panels.',1);
+
+insert into achievement(title,description,isSelfReport)
+values ('Wind Powers','Built a personal wind turbine.',1);
+
+insert into achievement(title,description)
+values ('Top 10','Claim a spot in the top 10 percent of users.');
+
+insert into achievement(title,description)
+values ('Top 50','Claim a spot in the top 50 percent of users.');
+
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify
+                   )
+import dbi
+import calculator as calculator
+import sys,math
+# the database to use:
+d = "egarcia2_db"
+# script testingSetup.sh replaces this like so:
+# $ ./testingSetup.sh atinney_db
+
+# ==========================================================
+# The functions that do most of the work.
+
+def getConn(db):
+    '''Returns a database connection for that db'''
+    dsn = dbi.read_cnf()
+    conn = dbi.connect(dsn)
+    conn.select_db(db)
+    return conn
+
+def getAchievements(conn, searchFor):
+    '''Returns the AID, title, description, isRepeatable, isSelfReport
+    of all achievements that have a similar field to the search,
+    as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    searchFor = "%" + searchFor + "%"
+    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
+                    from achievement
+                    where title like %s
+                    or description like %s
+                    or isRepeatable like %s
+                    or isSelfReport like %s''',
+                    [searchFor,searchFor,searchFor,searchFor])
+    
+    return curs.fetchall()
+
+def getAllAchievements(conn):
+    '''Returns the AID, title, description, isRepeatable, isSelfReport 
+    of all achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
+                    from achievement''')
+    return curs.fetchall()
+
+def getCompAchievements(conn, UID):
+    '''Returns the AID, title, description, and count of this user's
+    completed achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    #also need to do join for count here
+    curs.execute('''select completed.AID,title,description,count
+                    from completed
+                    join achievement
+                    on achievement.AID=completed.AID
+                    where UID=%s''', [UID])
+    return curs.fetchall()
+#for the one above and below need to do a join to get title
+#and description but not in the mood to do that rn
+def getStarAchievements(conn, UID):
+    '''Returns the AID, title, and description of this user's
+    starred achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select starred.AID,title,description
+                    from starred
+                    join achievement
+                    on achievement.AID=starred.AID
+                    where UID=%s''', [UID])
+    return curs.fetchall()
+
+def getIsRepeatable(conn, AID):
+    '''Returns whether or not this achievement is eligible
+    for repetition. This is a Boolean return.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select isRepeatable from achievement where AID=%s''' [AID])
+    
+    #not checking for null cause if that happens it was our fault
+    res = curs.fetchone()
+
+    if res == 1: #in our world, 0 is false and 1 is true
+        return True
+    else:
+        return False
+
+def getIsSelfReport(conn, AID):
+    '''Returns whether or not this achievement is eligible
+    for self report. This is a Boolean return.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select isSelfReport from achievement where AID=%s''' [AID])
+    
+    #not checking for null cause if that happens it was our fault
+    res = curs.fetchone()
+
+    if res == 1: #in our world, 0 is false and 1 is true
+        return True
+    else:
+        return False
+
+
+def getReportedAchieves(conn, UID):
+    '''Returns a simple list of AIDs for all completed user achievements
+    that says if the achievement is currently reportable by the user.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select AID from completed
+                    where UID=%s''', [UID])
+
+    return list(map(lambda x: x['AID'], curs.fetchall()))
+
+
+def getUser(conn, UID):
+    '''Returns user information, as a dictionary.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select * from user
+                    where UID=%s''', [UID])
+    return curs.fetchone()
+
+def updateUserInfo(conn, UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry):
+    curs = dbi.dictCursor(conn)
+    curs.execute('''update user 
+                            set miles_flown=%s, 
+                            miles_driven=%s,
+                            servings_lamb=%s,
+                            servings_beef=%s,
+                            servings_cheese=%s,
+                            servings_pork=%s,
+                            servings_turkey=%s,
+                            servings_chicken=%s,
+                            laundry=%s
+                    where UID=%s''', [UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry])
+
+
+def calculateUserFootprint(conn, UID):
+    curs = dbi.dictCursor(conn)
+    curs.execute(''' select 
+                        miles_flown,
+                        miles_driven,
+                        servings_lamb,
+                        servings_beef,
+                        servings_cheese,
+                        servings_pork,
+                        servings_turkey,
+                        servings_chicken,
+                        laundry
+                    from user where UID = %s
+                ''', [UID])
+    userData = curs.fetchone()
+    print('userData in calculateUserFootprint: ', str(userData))
+    total = calculator.plane_emissions(userData['miles_flown']) \
+            + calculator.car_emissions(userData['miles_driven']) \
+            + calculator.meat_emissions(userData['servings_lamb'], userData['servings_beef'], userData['servings_cheese'], userData['servings_pork'], userData['servings_turkey'], userData['servings_chicken']) \
+            + calculator.washer_emissions(userData['laundry']) \
+            + calculator.dryer_emissions(userData['laundry'])
+    return total
+
+
+def prettyRound(number):
+    return math.floor(round(number,0))
+
+# ==========================================================
+# This starts the ball rolling, *if* the file is run as a
+# script, rather than just being imported.    
+
+if __name__ == '__main__':
+    conn = getConn('wmdb')
+    pl = getPeople(conn)
+    for person in pl:
+        print('{name} born on {date}'
+              .format(name=person['name'],
+                      date=person['birthdate']))
+        
+#!/bin/bash
+# Run this on your db if you want to test webpages and such
+
+# Swaps the current database in databaseAccess.py:
+# sed -i 's/d = ".*"/d = "'$1'"/' databaseAccess.py;
+
+# WARNING: this deletes the databases and remakes them!
+while true
+do
+    read -r -p 'This will reset all the databases. Continue? [yN] --> ' choice
+    case "$choice" in
+      n|N) echo "Operation aborted."; break;;
+      y|Y) sed -i 's/d = ".*"/d = "'$1'"/' databaseAccess.py; mysql < database.sql $1; mysql < makeAchieves.sql $1; mysql < webpageTest.sql $1; echo "Success!"; break;;
+      *) echo "Operation aborted."; break;;
+    esac
+done-- Creating a user
+insert into user(first_Name,last_Name,footprint,username,password,
+                miles_flown,miles_driven,servings_lamb,servings_beef,
+                servings_cheese,servings_pork,servings_chicken,
+                servings_turkey,laundry)
+values ('alissa','tinney',4000.0,'atinney','abc',5,3,20,30,2,4,50,30,5);
+
+-- Inserting into completed
+insert into completed(UID,AID)
+values(1,1);
+
+insert into completed(UID,AID)
+values(1,2);
+
+insert into completed(UID,AID)
+values(1,7);
+
+insert into completed(UID,AID)
+values(1,9);
+
+-- Inserting into starred
+insert into starred(UID,AID)
+values(1,3);
+
+insert into starred(UID,AID)
+values(1,4);
+
+insert into starred(UID,AID)
+values(1,5);
+
+-- Showing results
+-- select * from user;
+-- select * from achievement;
+-- select * from completed;
+-- select * from starred;{% extends "main.html" %}
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a class="active" href="/achievements/">Search Achievements</a></li>
+            {% if isLoggedIn != None %} <!-- hidden until login -->
+                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block search %}
+<form id="searchTop" method=POST action="/achievements/">
+    <input id="searchtermTop" placeholder="Search" name="searchterm">
+    <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+</form>
+{% endblock %}
+
+
+{% block feature %}
+        <!-- a different fun fact goes here -->
+{% endblock %}
+
+
+{% block body %}
+    
+    {% if title == "" %}
+        <h1>Showing All Achievements:</h1>
+    {% else %}
+        <h1>Showing Achievements matching <i>{{title}}</i>:</h1>
+    {% endif %}
+    
+    <table id="achieves">
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th class="small">Repeatable</th>
+            {% if isLoggedIn != None %}
+                <th class="small">Self-Report</th>
+            {% endif %}
+        </tr>
+        
+        {% for achievement in achievements %}
+        {% set aID = achievement['AID'] %}
+        {% set repeatable = achievement['isRepeatable'] %}
+        <tr data-tt="{{aID}}">
+            <td id="title">{{achievement['title']}}</td>
+            <td id="description">{{achievement['description']}}</td>
+            <td class="small" id="repeatable"> 
+                <!-- don't use id bc it's a loop -->
+                {% if repeatable == 1 %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}</td>
+            
+            
+            {% if isLoggedIn != None %}
+                <!-- user has it, it's repeatable, and it's self-reportable -->
+                {% if aID in reps and repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
+                <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
+                {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
+                <!-- user doesn't have it and it's self-reportable -->
+                {% elif not aID in reps and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button">Go!</button></td>
+                {% endif %}
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
+
+{% block footerSearch %}
+    <form id="searchBottom" method=POST action="/achievements/">
+        <input id="searchtermBottom" placeholder="Search" name="searchterm">
+        <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+    </form>
+{% endblock %}
+
+
+{% block JSJQ %}
+<!-- need delegated handler to go to the right page -->
+<!-- each self-reported achievement has its own generated page with some info -->
+<!-- unimplemented -->
+{% endblock %}{% extends "profile.html" %}
+<!-- Two load cases -->
+<!-- (1) Screen to log in -->
+<!-- (2) Confirmation of logging off -->
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+            {% if {{isLoggedIn}} %} <!-- hidden until login -->
+                <li><a href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a class="active" href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a class="active" href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Ellie Czepiel, Estrella Garcia, & Alissa Tinney">
+    <title>Fueling Change</title>
+    <link rel='stylesheet' href="{{url_for('static', filename = 'style.css')}}">
+     
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    <div id="content">
+    <div id="textpad">
+    {% block navigation %}
+        <div id="navigation">
+            <ul>
+            <li><a class="active" href="/">Home</a></li>
+            <li><a href="/achievements/">Search Achievements</a></li>
+                {% if isLoggedIn != None %} <!-- hidden until login -->
+                    <li><a href="/profile/{{userURL}}/">My Profile</a></li>
+                    <li><a href="/login/">Log Out</a></li>
+                {% else %} <!-- hidden when logged in -->
+                    <li><a href="/login/">Login</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endblock %}
+
+    {% block flashing %}
+        <!-- any flashes we want go here -->
+    {% endblock %}
+    
+    <div id="slide">
+        <script>
+            var x = document.getElementById("slide");
+            if(x.style.display==="none"){
+                x.style.display = "block";
+    
+            }
+            else{
+                x.style.display = "none";
+            }           
+            ;
+        </script>
+    {% block search %}
+    {% endblock %}
+
+    {% block feature %}
+        <!-- fun fact goes here -->
+    {% endblock %}
+    
+    {% block body %}
+    <h1>{{title}}</h1>
+    
+    <p>
+        Welcome to Fueling Change. Select from the options above to interact with our website.
+    </p>
+    {% endblock %}
+
+    {% block footerSearch %}
+    {% endblock %}
+    </div> <!-- end of textpad div -->
+    </div> <!-- end of content div -->
+    </div> <!-- end of slide div -->
+
+    <div id="picture">
+    {% block picture %}
+        <!-- place for scenic picture go here -->
+    {% endblock %}
+    </div> <!-- end of picture div -->
+
+
+    <!-- Sliding! -->
+    <script>
+        $('#slide').slideDown(500);
+    </script>
+
+{% block JSJQ %}
+{% endblock %}
+
+
+</body>
+</html>{% extends "main.html" %} 
+<!-- Four different load cases: -->
+<!-- (1) Their account and user logged IN -->
+<!-- (2) Another account and user logged IN -->
+<!-- (3) User logged OFF and not searched yet -->
+<!-- (4) User logged OFF and after successful search -->
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+            {% if isUser and request.method == "GET" %} <!-- hidden until login -->
+                <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% elif isUser %} <!-- hidden until login -->
+                <li><a class="halfactive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% elif isLoggedIn != None %}
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block body %}
+{% if isUser %}
+    {% if request.method == "GET" %}
+        <!-- (1) their own account and logged in -->
+        <h1>Hi {{title}}</h1> 
+        <p>Your current emissions are {{emissions}} kilograms of carbon dioxide per year</p>
+        <p>What would you like to do today?</p>
+
+        <form id="reporting" method=POST action="/useraction/{{userURL}}/">
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="report">Report Achievements</button>
+        </form>
+
+        <form id="achieving" method=POST action="/profile/{{userURL}}/">
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="stats">View My Statistics</button>
+            <!-- statistics also includes achievements -->
+        </form>
+        
+        <form id="uSearch" method=POST action="/useraction/">
+            <input id="searchterm" placeholder="Search" name="searchterm">
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
+        </form>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    {% elif request.method == "POST" %}
+        
+        <h1>Viewing {{title}}'s Achievements</h1>
+        <!-- user statistics, percentiles, and footprint -->
+        <!-- use a class="exlong" for whatever the largest element is -->
+        
+        <!-- these are working, inspect to see data-tt -->
+        <!-- completed achievements -->
+        <div class="centerme">
+        <h2><u>Completed Achievements</u></h2>
+        <table class="exlong" id="completedAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Count</th>
+            </tr>
+            
+            {% for achievement in compAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+                <td class="count">{{achievement['count']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- starred achievements -->
+        <h2><u>Starred Achievements</u></h2>
+        <table id="starredAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+            
+            {% for achievement in starAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        </div> <!-- end of centerme div -->
+    {% endif %}
+
+
+<!-- ############################################### -->
+{% elif isLoggedIn != None or searched == True %}
+    <!-- (2) another account and logged in -->
+    <!-- (4) successful search for user -->
+    <!-- the key difference between these is the navigation bar -->
+    <!-- this shows the statistics page automatically -->
+    <h1>Viewing {{title}}'s Achievements</h1>
+
+    <!-- other user statistics, percentiles, and footprint -->
+        
+    <!-- idk if this works -->
+    <!-- completed achievements only -->
+    <div class="centerme">
+    <h2><u>Completed Achievements</u></h2>
+    <table id="completedAchieves">
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th class="small">Count</th>
+        </tr>
+        
+        {% for achievement in compAchis %}
+        {% set aID = achievement['AID'] %}
+        <tr data-tt="{{aID}}">
+            <td class="title">{{achievement['title']}}</td>
+            <td class="description">{{achievement['description']}}</td>
+            <td class="count">{{achievement['count']}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div> <!-- end of centerme div -->
+
+<!-- ############################################### -->
+{% else %}
+    <!-- (3) user logged off and not searched yet -->
+    <h1>Search for User</h1>
+
+    <form id="uSearch" method=POST action="/useraction/">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search for User</button>
+    </form>
+
+{% endif %}
+{% endblock %}{% extends "profile.html" %} 
+<!-- Two different load cases: -->
+<!-- (1) User pressed report button on profile page -->
+<!-- (2) User pressed find user button on profile page -->
+
+{% block navigation %}
+    <div id="navigation">
+        <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+            {% if isUser %} <!-- hidden until login -->
+                <li><a class="halfactive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% elif isLoggedIn != None %}
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Log Out</a></li>
+            {% else %} <!-- hidden when logged in -->
+                <li><a class="quarteractive" href="/profile/{{userURL}}/">My Profile</a></li>
+                <li><a href="/login/">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block flashing %}
+    <!-- flashes for unfruitful searches go here -->
+{% endblock %}
+
+{% block body %}
+    {% if request.form['submit'] == 'report' %}
+    <!-- (1) THIS IS WHERE THE USER CAN INSERT SELF-REPORTED INFORMATION -->
+    <!-- empty fields should be ignored -->
+
+    <h1>Update Information</h1>
+    <!-- How they add more data -->
+    <div class="centerme">
+    <form class="bigform" id="update" method=POST action="/useraction/report/{{userURL}}/">
+        <table>
+        <tr><td class="forform"><input type="number" id="flights" placeholder="Annual Flight Mileage" name="flights"></td></tr>
+        <tr><td class="forform"><input type="number" id="drives" placeholder="Monthly Driving Mileage" name="drives"></td></tr>
+        
+        <tr><td class="forform"><fieldset>
+            <legend>Car Type</legend>
+            <label class="space">
+                <input required type="radio" name="cartype" value="gas">
+                GAS
+            </label>
+            <label class="space">
+                <input required type="radio" name="cartype" value="hybrid">
+                HYBRID
+            </label>
+            <label>
+                <input required type="radio" name="cartype" value="electric">
+                ELECTRIC
+            </label>
+            </fieldset>
+        </td></tr>
+
+        <tr><td class="forform"><input type="number" id="lamb" placeholder="Lamb Servings per Week" name="lamb"></td></tr>
+        <tr><td class="forform"><input type="number" id="beef" placeholder="Beef Servings per Week" name="beef"></td></tr>
+        <tr><td class="forform"><input type="number" id="cheese" placeholder="Cheese Servings per Week" name="cheese"></td></tr>
+        <tr><td class="forform"><input type="number" id="pork" placeholder="Pork Servings per Week" name="pork"></td></tr>
+        <tr><td class="forform"><input type="number" id="turkey" placeholder="Turkey Servings per Week" name="turkey"></td></tr>
+        <tr><td class="forform"><input type="number" id="chicken" placeholder="Chicken Servings per Week" name="chicken"></td></tr>
+        <tr><td class="forform"><input type="number" id="laundry" placeholder="Laundry per Week" name="laundry"></td></tr>
+
+        <tr><td class="forform"><fieldset>
+            <legend>Typical Drying Style</legend>
+                <label class="space">
+                    <input required type="radio" name="drytype" value="dryer">
+                    DRYER
+                </label>
+                <label class="space">
+                    <input required type="radio" name="drytype" value="air dry">
+                    AIR DRY
+                </label>
+                </fieldset>
+            </td></tr>
+
+        <tr><td class="forform">
+            <button id="updatebtn" type="submit" name="submit" value="updateInfo">Submit!</button>
+        </td></tr>
+
+        </table>
+    </form>
+    </div> <!-- end of centerme div -->
+    <!-- list of achievements they haven't done but are self-report -->
+    <!-- prolly need to do a join for this gah! -->
+
+
+    <!-- ############################################### -->
+    {% else %}
+    <!-- (2) THIS IS WHERE THE USER CAN SEARCH FOR OTHER USERS -->
+    <!-- this submission shows a list of linked users that match the search -->
+    <!-- if user doesn't exist, list is empty and flash to tell them this -->
+    <!-- link format: /profile/searchedfirstname-searchedlastname-searchedUID -->
+    
+    <h1>Search Users</h1>
+
+    <!-- they can search again if they want -->
+    <form id="uSearch" method=POST action="/useraction/{{userURL}}/">
+        <input id="searchterm" placeholder="Search" name="searchterm">
+        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
+    </form>
+
+    <!-- set the searched variable true if people found -->
+    
+    <!-- list of users that the search found -->
+
+    {% endif %}
+
+{% endblock %}
+/* how to do variables: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties */
+:root {
+    --green: #78C31E;
+    --dark-green: #147818;
+    --light-blue: #1A94F9;
+    --blue: #0078FA;
+    --dark-blue: #0214A4;
+    --cream: #FFFDD0;
+}
+
+/* pulled from hwk5 */
+body {
+    background-color: var(--blue);
+}
+
+H1 {
+    color: var(--dark-green);
+    font-size: 200%;
+}
+
+H2 {
+    color: var(--dark-green);
+    text-align: center;
+}
+
+#flashes { 
+    color: red;
+    font-size: large;
+	font-style: italic;
+}
+
+form {
+    display: inline-block;
+    border: 2px solid var(--blue);
+    padding: 2ex;
+    border-radius: 2ex;
+    margin-top: 30px;
+    width: 250px;
+    text-align: center;
+}
+
+.bigform {
+    width: 500px;
+}
+
+.space {
+    margin-right: 10px;
+}
+
+.exlong {
+    margin-bottom: 100px;
+}
+
+.long {
+    margin-bottom: 20px;
+}
+
+[type=submit] {
+    font-size: 1em;
+    font-weight: normal;
+    border: 1px solid var(--blue);
+    border-radius: 0.5em;
+    background-color: #d0FFFF;
+}
+
+fieldset {
+    display: inline-block;
+}
+
+#iconlist {
+    list-style-type: none;  /* no bullets */
+    padding: 0px;
+}
+
+#iconlist li {
+    display: inline;
+}
+
+/* Navigation bar */
+/* from: https://www.w3schools.com/css/css_navbar.asp */
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--blue);
+}
+  
+li {
+    float: left;
+}
+  
+li a {
+    display: block;
+    color: var(--cream);
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    border-bottom: 10px solid var(--blue);
+}
+  
+li a:hover:not(.active) {
+    background-color: var(--dark-green);
+    border-bottom: 10px solid var(--dark-green);
+}
+  
+.active {
+    background-color: var(--dark-green);
+    border-bottom: 10px solid var(--dark-green);
+}
+
+.halfactive {
+    background-color: var(--blue);
+    border-bottom: 10px solid var(--dark-green);
+}
+
+.quarteractive {
+    background-color: var(--blue);
+    border-bottom: 10px solid var(--dark-blue);
+}
+
+/* divs */
+#content {
+    background-color: var(--cream);
+    width: 100%;
+    height: auto;
+    padding-bottom: 20px;
+}
+
+#textpad {
+    padding-left: 20px;
+}
+
+.centerme {
+    text-align: center;
+}
+
+/* For the table */
+table {
+    margin-left:auto; 
+    margin-right:auto;
+}
+
+th {
+    width: 300px;
+    font-size: 110%;
+}
+
+.small {
+    width: 100px;
+}
+
+th, td {
+    text-align: center;
+    overflow: hidden;
+}
+
+/* idk why this isn't working*/
+.forform {
+    margin: 10px;
+}
