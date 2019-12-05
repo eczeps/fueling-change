@@ -5,8 +5,8 @@ drop table if exists starred;
 drop table if exists user;
 drop table if exists achievement;
 
--- User table will hold all the user's information used to calculate
--- the user's carbon footprint, as well as personal info
+/* User table will hold all the user's information used to calculate
+the user's carbon footprint, as well as personal info */
 Create table user(
 	UID int auto_increment,
 	first_Name varchar(30),
@@ -40,9 +40,9 @@ create table achievement(
 	Primary Key (AID)
 );
 
--- completed table will hold userIDs and achievement IDs as key value pairs to 
--- indicate which users have completed what; the counter indicates how many 
--- times a user has completed the achievement 
+/* completed table will hold userIDs and achievement IDs as key value pairs to 
+indicate which users have completed what; the counter indicates how many 
+times a user has completed the achievement */
 create table completed(
     UID int,
     AID int,
@@ -54,10 +54,9 @@ create table completed(
         on update cascade
         on delete cascade
 );
-
--- similar to the achievements table, the starred table uses userIDs
--- and achievementIDs as key value pairs to indicate
--- certain users have starred certain achievements
+/* similar to the achievements table, the starred table uses userIDs
+and achievementIDs as key value pairs to indicate
+certain users have starred certain achievements */
 create table starred(
     UID int,
     AID int,

@@ -1,3 +1,5 @@
+/* stylesheet for the entire app */
+
 
 /* how to do variables: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties */
 :root {
@@ -9,7 +11,7 @@
     --cream: #FFFDD0;
 }
 
-/* pulled from hwk5 */
+/* style similar to hwk5 */
 body {
     background-color: var(--blue);
 }
@@ -156,7 +158,7 @@ th, td {
     overflow: hidden;
 }
 
-/* idk why this isn't working*/
+/* TODO: figure out why this isn't working*/
 .forform {
     margin: 10px;
 }

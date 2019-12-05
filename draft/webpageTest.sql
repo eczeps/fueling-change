@@ -1,4 +1,4 @@
--- Creating a user
+-- Creating a user for testing
 insert into user(first_Name,last_Name,footprint,username,password,
                 miles_flown,miles_driven,servings_lamb,servings_beef,
                 servings_cheese,servings_pork,servings_chicken,

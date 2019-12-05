@@ -25,12 +25,13 @@
 
 
 {% block feature %}
-        <!-- a different fun fact goes here -->
+        <!-- space to add in fun facts feature later -->
 {% endblock %}
 
 
 {% block body %}
     
+<!--Handles cases where user searched for an achievement and when there was no search term-->
     {% if title == "" %}
         <h1>Showing All Achievements:</h1>
     {% else %}
@@ -47,6 +48,7 @@
             {% endif %}
         </tr>
         
+        <!--iterate over achievements in the search results and display them in a table-->
         {% for achievement in achievements %}
         {% set aID = achievement['AID'] %}
         {% set repeatable = achievement['isRepeatable'] %}

@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "egarcia2_db"
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -33,7 +33,6 @@ def getAchievements(conn, searchFor):
                     or isRepeatable like %s
                     or isSelfReport like %s''',
                     [searchFor,searchFor,searchFor,searchFor])
-    
     return curs.fetchall()
 
 def getAllAchievements(conn):
@@ -57,8 +56,11 @@ def getCompAchievements(conn, UID):
                     on achievement.AID=completed.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
-#for the one above and below need to do a join to get title
-#and description but not in the mood to do that rn
+
+
+#TODO: for the one above and below need to do a join to get title and description
+
+
 def getStarAchievements(conn, UID):
     '''Returns the AID, title, and description of this user's
     starred achievements, as a list of dictionaries.
@@ -121,7 +123,12 @@ def getUser(conn, UID):
                     where UID=%s''', [UID])
     return curs.fetchone()
 
-def updateUserInfo(conn, UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry):
+def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
+                    cheese, pork, turkey, chicken, laundry):
+    '''Updates the carbon footprint info for a given user 
+    (works for users who have no previously entered info 
+    and for users who are changing old info). 
+    Does not return anything.'''
     curs = dbi.dictCursor(conn)
     curs.execute('''update user 
                             set miles_flown=%s, 
@@ -133,10 +140,15 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, cheese, pork, turkey
                             servings_turkey=%s,
                             servings_chicken=%s,
                             laundry=%s
-                    where UID=%s''', [UID, flights, driving, lamb, beef, cheese, pork, turkey, chicken, laundry])
+                    where UID=%s''', [UID, flights, driving, \
+                    lamb, beef, cheese, pork, turkey, chicken, laundry])
 
 
 def calculateUserFootprint(conn, UID):
+    '''given a user's UID, get their info from the database and uses the
+    carbon footprint calculator (calculator.py) to calculate and return 
+    a total footprint'''
+    #TODO: this works but the numbers seem to be slightly off. look into this more
     curs = dbi.dictCursor(conn)
     curs.execute(''' select 
                         miles_flown,
@@ -151,10 +163,12 @@ def calculateUserFootprint(conn, UID):
                     from user where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
-    print('userData in calculateUserFootprint: ', str(userData))
     total = calculator.plane_emissions(userData['miles_flown']) \
             + calculator.car_emissions(userData['miles_driven']) \
-            + calculator.meat_emissions(userData['servings_lamb'], userData['servings_beef'], userData['servings_cheese'], userData['servings_pork'], userData['servings_turkey'], userData['servings_chicken']) \
+            + calculator.meat_emissions(userData['servings_lamb'], \
+            userData['servings_beef'], userData['servings_cheese'], \
+            userData['servings_pork'], userData['servings_turkey'], \
+            userData['servings_chicken']) \
             + calculator.washer_emissions(userData['laundry']) \
             + calculator.dryer_emissions(userData['laundry'])
     return total
