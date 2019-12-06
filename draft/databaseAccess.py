@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "egarcia2_db"
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -172,6 +172,16 @@ def calculateUserFootprint(conn, UID):
             + calculator.washer_emissions(userData['laundry']) \
             + calculator.dryer_emissions(userData['laundry'])
     return total
+
+
+def getUIDOnLogin(conn, username, password):
+    #WILL return the user ID of the user with this username and password, or
+    #return -1 if it's an invalid username/password combo
+    #currently just returns 1!! had to hardcode this to get other things going
+    #TODO: implement this AFTER implementing the sign up & configuring database to store passwords
+    curs = dbi.dictCursor(conn)
+    #REPLACE THIS!!
+    return 1
 
 
 def prettyRound(number):
