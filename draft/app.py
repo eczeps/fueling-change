@@ -7,6 +7,7 @@ app = Flask(__name__)
 import sys,os,random,math
 import databaseAccess
 
+#TODO: change the navbar word "Log Out" to say "Log In" when the user isn't logged in
 #TODO: implement flashing!!! it doesn't show up in the template right now
 
 currDB = databaseAccess.d
@@ -33,7 +34,7 @@ def index():
     conn = databaseAccess.getConn(currDB)
     user = ""
     #userID will either be the user's number or None if they're not logged in
-    userID = session['uID']
+    userID = session.get('uID')
 
     if userID:
         userInfo = databaseAccess.getUser(conn, userID)
@@ -51,14 +52,15 @@ def index():
 def achievement(searchFor):
     conn = databaseAccess.getConn(currDB)
     user = ""
+    userID = session.get('uID')
     # rep is short for reportable
     rep = []
 
-    if session['uID']:
-        userInfo = databaseAccess.getUser(conn, session['uID'])
+    if userID:
+        userInfo = databaseAccess.getUser(conn, userID)
         user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
         user += '-' + str(userInfo['UID'])
-        rep = databaseAccess.getReportedAchieves(conn, session['uID']) 
+        rep = databaseAccess.getReportedAchieves(conn, userID) 
 
     #if the user is searching for something, access the database to get search results
     searchFor = request.form.get('searchterm')
@@ -74,15 +76,18 @@ def achievement(searchFor):
         searchFor = ''
         a = databaseAccess.getAllAchievements(conn)
 
+
+    #TODO: currently an error when you're not logged on, you're on the search page, and you click on
+    #the profile page. This may be resolved when we fix the profile URLs, but otherwise need to keep
+    #an eye on that use case.
     return render_template('achievementSearch.html',title=searchFor,
                                                     achievements=a,
-                                                    isLoggedIn=session['uID'],
+                                                    #again, must be better way to do this
+                                                    isLoggedIn=(userID if userID else False),
                                                     reps=rep,
                                                     userURL=user)
 
-'''handles the user profile route, which displays user info
-user is NOT found using session variables; it's found based on the URL
-this will be re-implemented later when we've implemented sessions & sign in flow'''
+
 @app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
 # Need to redirect it for the above but not going to do it yet
 # redirect to /profile/searchedfirstname-searchedlastname-searchedUID
@@ -106,6 +111,7 @@ def profile(user):
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
         #TODO: is there a better way to format this line: (basically converting from None to False if we have to)
+        #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         currUser = (int(UID) == current_uID if current_uID else False) #boolean
 
         #get achievements
@@ -193,7 +199,7 @@ def login():
         #user is logged in; they're trying to log out
         flash('Logging out!')
         session['uID'] = None
-        return redirect(url_for(index))
+        return redirect(url_for('index'))
     else:
         #user isn't logged in; they're trying to log in
         return render_template('login_page.html')
@@ -219,6 +225,9 @@ def setUID():
 
 @app.route('/signup/', methods=["GET"])
 def signup():
+    #get method renders a page w a form
+    #post takes the username and password, randomly generates a salt, and puts the username, salt, and hash(password) in the database
+    #then sets the session uID so that they'll be logged in
     return "<p> this page hasn't been implemented yet!! we have to figure out how to store passwords in the database first</p>"
 
 
