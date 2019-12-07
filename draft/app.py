@@ -110,6 +110,7 @@ def profile(user):
 
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+        userURL = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower() + '-' + str(current_uID)
         #TODO: is there a better way to format this line: (basically converting from None to False if we have to)
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
@@ -126,7 +127,7 @@ def profile(user):
                                                 emissions = format(emissions, ','),
                                                 #TODO: ditto -- can we reformat this next line better?
                                                 isLoggedIn= (current_uID if current_uID else False),
-                                                userURL=user,
+                                                userURL=userURL,
                                                 #this is what used to be here, unsure what currUser was supposed to be for?
                                                 #isUser=currUser,
                                                 isUser=True,
