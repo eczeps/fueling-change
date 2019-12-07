@@ -112,14 +112,14 @@ def profile(user):
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
         #TODO: is there a better way to format this line: (basically converting from None to False if we have to)
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
-        currUser = (int(UID) == current_uID if current_uID else False) #boolean
+        #currUser = (int(UID) == current_uID if current_uID else False) #boolean
 
         #get achievements
-        allComps = databaseAccess.getCompAchievements(conn, UID)
-        allStars = databaseAccess.getStarAchievements(conn, UID)
+        allComps = databaseAccess.getCompAchievements(conn, current_uID)
+        allStars = databaseAccess.getStarAchievements(conn, current_uID)
 
         #calculate emissions
-        emissionsRAW = databaseAccess.calculateUserFootprint(conn, UID)
+        emissionsRAW = databaseAccess.calculateUserFootprint(conn, current_uID)
         emissions = databaseAccess.prettyRound(emissionsRAW)
     
         return render_template('profile.html',  title=titleString,
@@ -127,7 +127,9 @@ def profile(user):
                                                 #TODO: ditto -- can we reformat this next line better?
                                                 isLoggedIn= (current_uID if current_uID else False),
                                                 userURL=user,
-                                                isUser=currUser,
+                                                #this is what used to be here, unsure what currUser was supposed to be for?
+                                                #isUser=currUser,
+                                                isUser=True,
                                                 searched=didSearch,
                                                 compAchis=allComps,
                                                 starAchis=allStars)
