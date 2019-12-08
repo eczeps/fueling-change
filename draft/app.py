@@ -214,9 +214,10 @@ def setUID():
     #gets called when a user presses submit on the login form
     username = request.form.get('username')
     password = request.form.get('password')
-    #TODO: ask scott about salts bc this is confusing idk where to store it or generate it
-    hashed_password = bcrypt.hashpw(password.encode(), salt)
     conn = databaseAccess.getConn(currDB)
+    salt = databaseAccess.getSaltByUsername(conn, username)
+    #TODO: ask scott about salts bc this is confusing and im not sure I did it right
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
     #userID will either be the user's ID or -1 if it was an invalid username/password combo
     userID = databaseAccess.getUIDOnLogin(conn, username, hashed_password)
     if userID != -1:
@@ -239,11 +240,10 @@ def signup():
         #then sets the session uID so that they'll be logged in
         username = request.form.get('username')
         password = request.form.get('password').encode()
-        #still confused about how gensalt works -- how does it generate the same salt each time for the same user??
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(password, salt)
         conn = databaseAccess.getConn(currDB)
-        uID = databaseAccess.signUpUser(conn, username, password, salt)
+        uID = databaseAccess.setUIDOnSignup(conn, username, password, salt)
         session['uID'] = uID
         return redirect(url_for('index'))
     

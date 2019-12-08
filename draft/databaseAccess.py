@@ -192,15 +192,23 @@ def getUIDOnLogin(conn, username, hashed_password):
 def setUIDOnSignup(conn, username, hashed_password, salt):
     #puts the username, hashed password, salt, in the database
     #returns the uid the database created for this user
-    #TODO: add in checking to make sure no two users have the same username
+    #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
     curs.execute('''insert into user (username, password, salt) 
-                    values %s, %s, %s''', [username, hashed_password, salt])
+                    values (%s, %s, %s)''', [username, hashed_password, salt])
     curs.execute('''select UID from user 
                     where username = %s 
                     and password = %s 
                     and salt = %s''', 
                     [username, hashed_password, salt])
+    return curs.fetchone()
+
+
+def getSaltByUsername(conn, username):
+    #returns the salt associated with the given username
+    #this is called when someone is logging in and we're checking their password
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select salt from user where username = %s''', [username])
     return curs.fetchone()
 
 
