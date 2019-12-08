@@ -1,0 +1,15 @@
+{% extends "main.html" %} 
+<!--user wants to sign up-->
+<!--still a lot of UI work to be done here but the skeleton is done-->
+<!--this is not the same template as login_page because eventually it'll have 
+carbon footprint questions on it too-->
+
+{% block body %}
+
+<form action="{{url_for('signup')}}" method="POST">
+    Username: <input type="text" name="username" label="username">
+    Password: <input type="password" name="password" label="username">
+    <input type="submit" value="Sign Up">
+</form>
+
+{% endblock %}
