@@ -191,6 +191,18 @@ def useract(user):
                                                 userURL=user,
                                                 isUser=currUser)
 
+'''route to display information for a given achievement and allows the user 
+to mark as completed if logged in '''
+@app.route('/achievement/<AID>/', methods= ['POST', 'GET'])
+def achieveinfo(AID):
+    #get information
+    conn = databaseAccess.getConn(currDB)
+    info = databaseAccess.getAchieveInfo(conn, AID)
+    users = databaseAccess.getAchievePeople(conn, AID)
+    return render_template('achieveinfo.html', achieveID = AID, 
+                    info = info, users = users)
+
+
 
 
 

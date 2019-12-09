@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "eczepiel_db"
+d = "egarcia2_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -18,6 +18,24 @@ def getConn(db):
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
+
+def getAchieveInfo(conn, AID):
+    '''Returns the title, description, isRepeatable, isSelfReport of given AID'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select title, description, isRepeatable, isSelfReport
+                    from achievement
+                    where AID = %s''', [AID])
+    return curs.fetchone()
+
+def getAchievePeople(conn, AID):
+    '''Returns the UID, first_Name, last_Name of people who have completed 
+    this achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select UID, first_Name, last_Name 
+                    from completed inner join user using (UID) 
+                    where AID = %s''', [AID])
+    return curs.fetchall()
+
 
 def getAchievements(conn, searchFor):
     '''Returns the AID, title, description, isRepeatable, isSelfReport
