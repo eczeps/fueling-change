@@ -204,9 +204,6 @@ def achieveinfo(AID):
                     info = info, users = users)
 
 
-
-
-
 @app.route('/login/', methods=['GET'])
 def login():
     #current_id is the id of the user currently logged in (if any)

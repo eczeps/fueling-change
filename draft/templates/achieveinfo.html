@@ -5,11 +5,16 @@
 <!-- Display the description-->
 <p>{{info['description']}}</p>
 <!-- Allow the user to check this as completed-->
-<p>Did you complete this achievement? </p>
+{%  if info['isSelfReport'] == 1: %}
+    <p> Did you complete this achievement?</p>
+    <button class="report-button">Yes!</button>
+{% endif %}
 <!-- implement an undo function if they accidentally mark as completed-->
 
 <!-- Display all the people who have completed this achievement-->
-<h2>User's who have reached this achievement!</h2>
+{% if users |length != 0: %}
+
+<h2>User's who have reached this achievement!</h2> 
 
 <table id= "achievers"> 
     <tr>
@@ -27,5 +32,12 @@
     {% endfor %}
 
 </table>
+
+{% else %}
+
+<h2>Be the first to reach this achievement!</h2>
+
+{% endif %}
+
 
 {% endblock %}
