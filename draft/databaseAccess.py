@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "atinney_db"
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -192,14 +192,13 @@ def calculateUserFootprint(conn, UID):
     return total
 
 
-def getUIDOnLogin(conn, username, hashed_password):
+def getUIDOnLogin(conn, username):
     #returns the user ID of the user with this username and password, or
     #return -1 if it's an invalid username/password combo
     curs = dbi.dictCursor(conn)
-    curs.execute('''select UID from user 
-                    where username = %s 
-                    and hashed_password = %s''',
-                    [username, hashed_password])
+    curs.execute('''select UID,password from user 
+                    where username = %s ''',
+                    [username])
     result = curs.fetchone()
     if result:
         return result
@@ -207,14 +206,14 @@ def getUIDOnLogin(conn, username, hashed_password):
         return -1
 
 
-def setUIDOnSignup(conn, username, hashed_password, salt, firstName, lastName):
+def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #puts the username, hashed password, salt, in the database
     #returns the uid the database created for this user
     #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into user (username, password, salt, first_Name, last_Name) 
-                    values (%s, %s, %s, %s, %s)''',
-                    [username, hashed_password, salt, firstName, lastName])
+    curs.execute('''insert into user (username, password, first_Name, last_Name) 
+                    values (%s, %s, %s, %s)''',
+                    [username, hashed_password, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 
                     and password = %s 
@@ -222,7 +221,7 @@ def setUIDOnSignup(conn, username, hashed_password, salt, firstName, lastName):
                     [username, hashed_password, salt])
     return curs.fetchone()
 
-
+#TODO: delete this once logins & signups are working
 def getSaltByUsername(conn, username):
     #returns the salt associated with the given username
     #this is called when someone is logging in and we're checking their password

@@ -23,6 +23,7 @@ import databaseAccess
 #TODO: (ESTRELLA) make sure we always use url_for (even in templates)
 #TODO: (ALISSA) comment all the code & do all documentation
 #TODO: (ELLIE) make a powerpoint/outline for the presentation
+#TODO: (ESTRELLA) submit a request for a team shell account, and email him when you do it
 
 currDB = databaseAccess.d
 # currUser = 1
@@ -244,22 +245,33 @@ def login():
 @app.route('/setUID/', methods=["POST"])
 def setUID():
     #gets called when a user presses submit on the login form
-    username = request.form.get('username')
-    password = request.form.get('password')
-    conn = databaseAccess.getConn(currDB)
-    salt = databaseAccess.getSaltByUsername(conn, username)
-    #TODO: ask scott about salts bc this is confusing and im not sure I did it right
-    hashed_password = bcrypt.hashpw(password.encode(), salt)
-    #userID will either be the user's ID or -1 if it was an invalid username/password combo
-    userID = databaseAccess.getUIDOnLogin(conn, username, hashed_password)
-    if userID != -1:
-        session['uID'] = userID
-        #TODO: change this redirect to go to the profile page. Currently can't
-        #because of the way the profile URL relies on having the user's name in it
-        #^^have the form ask for the user's name too!
-        return redirect(url_for('index'))
-    else:
-        return redirect(request.referrer)
+    try:
+        username = request.form.get('username')
+        password = request.form.get('password')
+        conn = databaseAccess.getConn(currDB)
+        #userID will either be the user's ID or -1 if it was an invalid username/password combo. this also returns the hashed password
+        row = databaseAccess.getUIDOnLogin(conn, username, hashed_password)
+        row['UID'] = userID
+        row['password'] = hashed_password
+        if userID == -1:
+            flash("login incorrect. Try again or join")
+            return redirect(url_for('index'))
+        else:
+            hashed2 = bcrypt.hashpw(password.encode('utf-8'),hashed_password.encode('utf-8'))
+            hashed2_str = hashed2.decode('utf-8')
+            if hashed2_str == hashed:
+                flash('successfully logged in as '+username)
+                session['uID'] = userID
+                #TODO: change this redirect to go to the profile page. Currently can't
+                #because of the way the profile URL relies on having the user's name in it
+                #^^have the form ask for the user's name too!
+                return redirect(url_for('index'))
+            else:
+                flash('login incorrect. Try again or join')
+                return redirect(url_for('index'))
+    except Exception as err:
+        flash('form submission error '+str(err))
+        return redirect( url_for('index') )
 
 
 
@@ -269,23 +281,36 @@ def signup():
         #get method renders a page w a form
         return render_template('signup.html')
     else:
-        #post takes the username and password, randomly generates a salt, and puts the username, salt, and hash(password) in the database
-        #then sets the session uID so that they'll be logged in
-        username = request.form.get('username')
-        password = request.form.get('password').encode()
-        salt = bcrypt.gensalt()
-        hashed = bcrypt.hashpw(password, salt)
+        try:
+            username = request.form['username']
+            passwd1 = request.form['password1']
+            passwd2 = request.form['password2']
+            if passwd1 != passwd2:
+                flash('passwords do not match')
+                return redirect( url_for('signup'))
+            #hash the password the user provided
+            hashed = bcrypt.hashpw(passwd1.encode('utf-8'), bcrypt.gensalt())
+            #convert it from bytes to string
+            hashed_str = hashed.decode('utf-8')
 
-        #post also takes the first and last name for database and URL purposes
-        fName = request.form.get('firstName')
-        lName = request.form.get('lastName')
-        conn = databaseAccess.getConn(currDB)
-        uID = databaseAccess.setUIDOnSignup(conn, username, password, salt, fName, lName)
-        if uID != -1:
-            session['uID'] = uID
-        else:
-            session['uID'] = None
-        return redirect(url_for('profile', user=session.get('uID')))
+            #post also takes the first and last name for database and URL purposes
+            fName = request.form.get('firstName')
+            lName = request.form.get('lastName')
+            conn = databaseAccess.getConn(currDB)
+            uID = databaseAccess.setUIDOnSignup(conn, username, hashed_str, fName, lName)
+            if uID != -1:
+                #actually log them in in the session
+                session['uID'] = uID
+                #TODO: change this redirect to go to the user's profile
+                return redirect(url_for('index'))
+            else:
+                session['uID'] = None
+                flash("that username is already taken! try again")
+                return redirect( url_for('signup'))
+            return redirect(url_for('profile', user=session.get('uID')))
+        except Exception as e:
+            flash("form submission error :( try again!")
+            return redirect( url_for('index'))
     
 
 
