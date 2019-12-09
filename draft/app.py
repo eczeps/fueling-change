@@ -10,7 +10,19 @@ import databaseAccess
 
 #TODO: change the navbar word "Log Out" to say "Log In" when the user isn't logged in
     #it's currently supposed to do this now, but the log in isn't working for me
-#TODO: implement flashing!!! it doesn't show up in the template right now
+#TODO: (ALISSA) implement flashing!!! it doesn't show up in the template right now
+#TODO: (ELLIE) Figure out team database
+#TODO: (ELLIE) figure out salts
+#TODO: (ESTRELLA) finish go & completed buttons
+#TODO: (ALISSA) fixing the profile routes so people can view other peoples' profiles
+#TODO: (ALISSA) implement user search
+#TODO: (ESTRELLA) if there's time, add more Go buttons & skeleton for starring
+#TODO: (ESTRELLA) make templates more inheritey
+#TODO: (ESTRELLA) create google doc for alpha version
+#TODO: run all the code through WAVE (whoever pushes last)
+#TODO: (ESTRELLA) make sure we always use url_for (even in templates)
+#TODO: (ALISSA) comment all the code & do all documentation
+#TODO: (ELLIE) make a powerpoint/outline for the presentation
 
 currDB = databaseAccess.d
 # currUser = 1
@@ -98,17 +110,18 @@ def achievement(searchFor):
 #want to use below for user searches which will display a list based on search result.
 #similar to the actor search in one of our assignments
 @app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
-# redirect to /profile/searchedfirstname-searchedlastname-searchedUID
+# redirect to /profile/searchedfirstname-searchedlastname-searchedUID/
 @app.route('/profile/<user>/', methods=['POST', 'GET'])
 def profile(user):
+    #TODO: make the URls just the username, don't have them include the UID
     userID = session.get('uID')
 
     #get user information
     #TODO: we really shouldn't be getting userInfo if current_uID is None. More generally,
     #we need to decide how to handle loading this page if the user is not logged in (and therefore current_uID is None)
     conn = databaseAccess.getConn(currDB)
-
-    if (userID!=None):
+    #TODO: see hwk6 to handle when user is an empty string (see movies route)
+    if (userID!=None): #TODO: add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
         userInfo = databaseAccess.getUser(conn, current_uID)
 
@@ -139,7 +152,7 @@ def profile(user):
                                                 searched=didSearch,
                                                 compAchis=allComps,
                                                 starAchis=allStars)
-
+    #TODO: make it so users can view other peoples profiles if they're logged in (add an elif here)
     else:
         didSearch = session.get('didSearch') #boolean
         #user isn't logged in
