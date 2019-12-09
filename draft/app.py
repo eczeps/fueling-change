@@ -9,10 +9,11 @@ import sys,os,random,math
 import databaseAccess
 
 #TODO: change the navbar word "Log Out" to say "Log In" when the user isn't logged in
+    #it's currently supposed to do this now, but the log in isn't working for me
 #TODO: implement flashing!!! it doesn't show up in the template right now
 
 currDB = databaseAccess.d
-didSearch = False #used to tell apart (3) and (4) in profile.html
+# currUser = 1
 # realistically, this will be an actual user's ID
 # for now we will just set it to 1 until we implement sessions & logging in
 # run makeAchieves and then webpageTest for this to work
@@ -32,18 +33,23 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 '''handles the homepage route, and handles both when users are logged in and when they aren't'''
 @app.route('/')
 def index():
+    session['didSearch'] = False #used to tell apart (3) and (4) in profile.html
     conn = databaseAccess.getConn(currDB)
+    #--accessing current user information
     user = ""
     #userID will either be the user's number or None if they're not logged in
     userID = session.get('uID')
 
-    if userID:
+    if userID != None:
         userInfo = databaseAccess.getUser(conn, userID)
         user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
         user += '-' + str(userInfo['UID'])
+    #else:
+        #not logged in
+    #--end of accessing current user information
 
     return render_template('main.html', title="Fueling Change",
-                                        isLoggedIn= (userID if userID else False),
+                                        isLoggedIn=(True if userID!=None else False),
                                         userURL=user)
 
 
@@ -52,16 +58,20 @@ def index():
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     conn = databaseAccess.getConn(currDB)
+    #--accessing current user information
     user = ""
     userID = session.get('uID')
     # rep is short for reportable
     rep = []
 
-    if userID:
+    if userID != None:
         userInfo = databaseAccess.getUser(conn, userID)
         user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
         user += '-' + str(userInfo['UID'])
         rep = databaseAccess.getReportedAchieves(conn, userID) 
+    #else:
+        #not logged in
+    #--end of accessing current user information
 
     #if the user is searching for something, access the database to get search results
     searchFor = request.form.get('searchterm')
@@ -78,33 +88,27 @@ def achievement(searchFor):
         a = databaseAccess.getAllAchievements(conn)
 
 
-    #TODO: currently an error when you're not logged on, you're on the search page, and you click on
-    #the profile page. This may be resolved when we fix the profile URLs, but otherwise need to keep
-    #an eye on that use case.
     return render_template('achievementSearch.html',title=searchFor,
                                                     achievements=a,
-                                                    #again, must be better way to do this
-                                                    isLoggedIn=(userID if userID else False),
+                                                    isLoggedIn=(True if userID!=None else False),
                                                     reps=rep,
                                                     userURL=user)
 
 
+#want to use below for user searches which will display a list based on search result.
+#similar to the actor search in one of our assignments
 @app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
-# Need to redirect it for the above but not going to do it yet
 # redirect to /profile/searchedfirstname-searchedlastname-searchedUID
 @app.route('/profile/<user>/', methods=['POST', 'GET'])
 def profile(user):
-    #TODO: reimplement global didSearch some other way
-    global didSearch
-
-    current_uID = session.get('uID')
+    userID = session.get('uID')
 
     #get user information
     #TODO: we really shouldn't be getting userInfo if current_uID is None. More generally,
     #we need to decide how to handle loading this page if the user is not logged in (and therefore current_uID is None)
     conn = databaseAccess.getConn(currDB)
 
-    if (current_uID):
+    if (userID!=None):
         #if the user is logged in
         userInfo = databaseAccess.getUser(conn, current_uID)
 
@@ -127,25 +131,27 @@ def profile(user):
         return render_template('profile.html',  title=titleString,
                                                 emissions = format(emissions, ','),
                                                 #TODO: ditto -- can we reformat this next line better?
-                                                isLoggedIn= (current_uID if current_uID else False),
+                                                isLoggedIn=(True if userID!=None else False),
                                                 userURL=userURL,
                                                 #this is what used to be here, unsure what currUser was supposed to be for?
-                                                #isUser=currUser,
-                                                isUser=True,
+                                                #isUser=currUser, #currUser was an id of the logged in person
+                                                isUser=current_uID, #will this be -1 if it needs to be?
                                                 searched=didSearch,
                                                 compAchis=allComps,
                                                 starAchis=allStars)
 
     else:
+        didSearch = session.get('didSearch') #boolean
         #user isn't logged in
+        #they should be able to view a limited version of anybody's profile though.
         flash('you aren\'t logged in!')
         return redirect(url_for('login'))
 
 '''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
-    global didSearch
-    UID = user.split('-')[2] #format first-lastname-UID
+    didSearch = session.get('didSearch') #boolean
+    UID = user.split('-')[2] #format was first-lastname-UID
     #get information
     conn = databaseAccess.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering
@@ -170,13 +176,13 @@ search users
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
 @app.route('/useraction/<user>/', methods=['POST', 'GET'])
 def useract(user):
-    #TODO: get rid of didSearch, re-implement some other way
-    global didSearch
+    didSearch = session.get('didSearch') #boolean
     
 
     #TODO: do we want to change this so that you can only view your own profile?
     #the way it is right now, profiles are publicly viewable and we should really
     #think about whether randos are able to edit other peoples' profiles this way
+    #The if/else's I (alissa) set up should prevent randos from editing: see profile.html
 
     #grab the user id
     UID = user.split('-')[2] #format first-lastname-UID
@@ -188,9 +194,9 @@ def useract(user):
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == session['uID']) #boolean
-    return render_template('useraction.html', isLoggedIn=session['uID'],
+    return render_template('useraction.html', isLoggedIn=currUser,
                                                 userURL=user,
-                                                isUser=currUser)
+                                                isUser=session['uID'])
 
 '''route to display information for a given achievement and allows the user 
 to mark as completed if logged in '''
@@ -206,16 +212,20 @@ def achieveinfo(AID):
 
 @app.route('/login/', methods=['GET'])
 def login():
-    #current_id is the id of the user currently logged in (if any)
-    current_uid = session.get('uID')
-    if current_uid:
+    #userID is the id of the user currently logged in (if any)
+    userID = session.get('uID') 
+    if userID!=None: #TODO:i don't think this logic works right I think it's backwards
         #user is logged in; they're trying to log out
         flash('Logging out!')
+        #how can they be logging out if the userID is already None
+        #wouldn't they already be logged out?
         session['uID'] = None
         return redirect(url_for('index'))
     else:
         #user isn't logged in; they're trying to log in
-        return render_template('login_page.html')
+        return render_template('login_page.html',
+                                isLoggedIn=False,
+                                userURL="")
             
 
 @app.route('/setUID/', methods=["POST"])
@@ -233,6 +243,7 @@ def setUID():
         session['uID'] = userID
         #TODO: change this redirect to go to the profile page. Currently can't
         #because of the way the profile URL relies on having the user's name in it
+        #^^have the form ask for the user's name too!
         return redirect(url_for('index'))
     else:
         return redirect(request.referrer)
@@ -251,10 +262,17 @@ def signup():
         password = request.form.get('password').encode()
         salt = bcrypt.gensalt()
         hashed = bcrypt.hashpw(password, salt)
+
+        #post also takes the first and last name for database and URL purposes
+        fName = request.form.get('firstName')
+        lName = request.form.get('lastName')
         conn = databaseAccess.getConn(currDB)
-        uID = databaseAccess.setUIDOnSignup(conn, username, password, salt)
-        session['uID'] = uID
-        return redirect(url_for('index'))
+        uID = databaseAccess.setUIDOnSignup(conn, username, password, salt, fName, lName)
+        if uID != -1:
+            session['uID'] = uID
+        else:
+            session['uID'] = None
+        return redirect(url_for('profile', user=session.get('uID')))
     
 
 

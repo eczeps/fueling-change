@@ -8,7 +8,7 @@
         <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/achievements/">Search Achievements</a></li>
-            {% if {{isLoggedIn}} %} <!-- hidden until login -->
+            {% if isLoggedIn %} <!-- hidden until login -->
                 <li><a href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a class="active" href="/login/">Log Out</a></li>
             {% else %} <!-- hidden when logged in -->

@@ -207,13 +207,14 @@ def getUIDOnLogin(conn, username, hashed_password):
         return -1
 
 
-def setUIDOnSignup(conn, username, hashed_password, salt):
+def setUIDOnSignup(conn, username, hashed_password, salt, firstName, lastName):
     #puts the username, hashed password, salt, in the database
     #returns the uid the database created for this user
     #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into user (username, password, salt) 
-                    values (%s, %s, %s)''', [username, hashed_password, salt])
+    curs.execute('''insert into user (username, password, salt, first_Name, last_Name) 
+                    values (%s, %s, %s, %s, %s)''',
+                    [username, hashed_password, salt, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 
                     and password = %s 
