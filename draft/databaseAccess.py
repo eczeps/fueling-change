@@ -192,14 +192,42 @@ def calculateUserFootprint(conn, UID):
     return total
 
 
-def getUIDOnLogin(conn, username, password):
-    #WILL return the user ID of the user with this username and password, or
+def getUIDOnLogin(conn, username, hashed_password):
+    #returns the user ID of the user with this username and password, or
     #return -1 if it's an invalid username/password combo
-    #currently just returns 1!! had to hardcode this to get other things going
-    #TODO: implement this AFTER implementing the sign up & configuring database to store passwords
     curs = dbi.dictCursor(conn)
-    #REPLACE THIS!!
-    return 1
+    curs.execute('''select UID from user 
+                    where username = %s 
+                    and hashed_password = %s''',
+                    [username, hashed_password])
+    result = curs.fetchone()
+    if result:
+        return result
+    else:
+        return -1
+
+
+def setUIDOnSignup(conn, username, hashed_password, salt):
+    #puts the username, hashed password, salt, in the database
+    #returns the uid the database created for this user
+    #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
+    curs = dbi.dictCursor(conn)
+    curs.execute('''insert into user (username, password, salt) 
+                    values (%s, %s, %s)''', [username, hashed_password, salt])
+    curs.execute('''select UID from user 
+                    where username = %s 
+                    and password = %s 
+                    and salt = %s''', 
+                    [username, hashed_password, salt])
+    return curs.fetchone()
+
+
+def getSaltByUsername(conn, username):
+    #returns the salt associated with the given username
+    #this is called when someone is logging in and we're checking their password
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select salt from user where username = %s''', [username])
+    return curs.fetchone()
 
 
 def prettyRound(number):

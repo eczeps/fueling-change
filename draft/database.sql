@@ -14,6 +14,7 @@ Create table user(
 	footprint float,
 	username varchar(30),
 	password varchar(30),
+	salt char(10),
 	-- had to condense user and userform since can't have
 	-- userform use UID as a primary key
 	miles_flown int,

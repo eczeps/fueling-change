@@ -4,6 +4,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
 from werkzeug import secure_filename
 app = Flask(__name__)
 
+import bcrypt
 import sys,os,random,math
 import databaseAccess
 
@@ -226,8 +227,11 @@ def setUID():
     username = request.form.get('username')
     password = request.form.get('password')
     conn = databaseAccess.getConn(currDB)
+    salt = databaseAccess.getSaltByUsername(conn, username)
+    #TODO: ask scott about salts bc this is confusing and im not sure I did it right
+    hashed_password = bcrypt.hashpw(password.encode(), salt)
     #userID will either be the user's ID or -1 if it was an invalid username/password combo
-    userID = databaseAccess.getUIDOnLogin(conn, username, password)
+    userID = databaseAccess.getUIDOnLogin(conn, username, hashed_password)
     if userID != -1:
         session['uID'] = userID
         #TODO: change this redirect to go to the profile page. Currently can't
@@ -238,12 +242,23 @@ def setUID():
 
 
 
-@app.route('/signup/', methods=["GET"])
+@app.route('/signup/', methods=["GET", "POST"])
 def signup():
-    #get method renders a page w a form
-    #post takes the username and password, randomly generates a salt, and puts the username, salt, and hash(password) in the database
-    #then sets the session uID so that they'll be logged in
-    return "<p> this page hasn't been implemented yet!! we have to figure out how to store passwords in the database first</p>"
+    if request.method == "GET":
+        #get method renders a page w a form
+        return render_template('signup.html')
+    else:
+        #post takes the username and password, randomly generates a salt, and puts the username, salt, and hash(password) in the database
+        #then sets the session uID so that they'll be logged in
+        username = request.form.get('username')
+        password = request.form.get('password').encode()
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password, salt)
+        conn = databaseAccess.getConn(currDB)
+        uID = databaseAccess.setUIDOnSignup(conn, username, password, salt)
+        session['uID'] = uID
+        return redirect(url_for('index'))
+    
 
 
 
