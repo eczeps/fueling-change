@@ -157,9 +157,16 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                             servings_pork=%s,
                             servings_turkey=%s,
                             servings_chicken=%s,
-                            laundry=%s
+                            laundry=%s,
+                            has_carbon_data=true
                     where UID=%s''', [UID, flights, driving, \
                     lamb, beef, cheese, pork, turkey, chicken, laundry])
+
+
+def doesUserHaveCarbonData(conn, UID):
+    curs = dbi.dictCursor(conn)
+    curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
+    return curs.fetchone()['has_carbon_data']
 
 
 def calculateUserFootprint(conn, UID):
@@ -212,8 +219,8 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #returns the uid the database created for this user
     #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into user (username, password, first_Name, last_Name) 
-                    values (%s, %s, %s, %s)''',
+    curs.execute('''insert into user (username, password, first_Name, last_Name, has_carbon_data) 
+                    values (%s, %s, %s, %s, false)''',
                     [username, hashed_password, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 

@@ -140,8 +140,14 @@ def profile(user):
         allStars = databaseAccess.getStarAchievements(conn, userID)
 
         #calculate emissions
-        emissionsRAW = databaseAccess.calculateUserFootprint(conn, userID)
-        emissions = databaseAccess.prettyRound(emissionsRAW)
+        has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, userID)
+        print('has_carbon_data in profile route: ' + str(has_carbon_data))
+        if has_carbon_data:
+            print('has carbon data!!')
+            emissionsRAW = databaseAccess.calculateUserFootprint(conn, userID)
+            emissions = databaseAccess.prettyRound(emissionsRAW)
+        else:
+            emissions = 0
     
         return render_template('profile.html',  title=titleString,
                                                 emissions = format(emissions, ','),
@@ -151,7 +157,7 @@ def profile(user):
                                                 #this is what used to be here, unsure what currUser was supposed to be for?
                                                 #isUser=currUser, #currUser was an id of the logged in person
                                                 isUser=userID, #will this be -1 if it needs to be?
-                                                searched=didSearch,
+                                                searched=session.get('didSearch'),
                                                 compAchis=allComps,
                                                 starAchis=allStars)
     #TODO: make it so users can view other peoples profiles if they're logged in (add an elif here)
@@ -165,8 +171,9 @@ def profile(user):
 '''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
+    #TODO: @Alissa not sure why we need didSearch here? might be worth re-checking :)
     didSearch = session.get('didSearch') #boolean
-    UID = user.split('-')[2] #format was first-lastname-UID
+    UID = session.get('uID') #format was first-lastname-UID
     #get information
     conn = databaseAccess.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering

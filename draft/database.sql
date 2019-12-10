@@ -26,6 +26,7 @@ Create table user(
 	servings_turkey int,
 	servings_chicken int,
 	laundry int,
+	has_carbon_data boolean not null DEFAULT false,
 	Primary key (UID)
 );
 
