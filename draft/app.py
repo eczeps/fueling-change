@@ -147,6 +147,7 @@ def profile(user):
             emissionsRAW = databaseAccess.calculateUserFootprint(conn, userID)
             emissions = databaseAccess.prettyRound(emissionsRAW)
         else:
+            #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
             emissions = 0
     
         return render_template('profile.html',  title=titleString,
