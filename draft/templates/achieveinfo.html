@@ -1,4 +1,4 @@
-{% extends "main.html" %} 
+{% extends "achievementSearch.html" %} 
 
 {% block body %} 
 <h1>Achievement # {{achieveID}} : {{info['title']}}</h1>
@@ -6,8 +6,8 @@
 <p>{{info['description']}}</p>
 <!-- Allow the user to check this as completed-->
 {%  if info['isSelfReport'] == 1: %}
-    <p> Did you complete this achievement?</p>
-    <button class="report-button">Yes!</button>
+    <p>{{user}}</p>
+    <!-- <button class="report-button">Yes!</button> -->
 {% endif %}
 <!-- implement an undo function if they accidentally mark as completed-->
 
@@ -40,4 +40,12 @@
 {% endif %}
 
 
+{% endblock %}
+
+{% block JSJQ %}
+<!-- need delegated handler to go to the right page -->
+<!-- each self-reported achievement has its own generated page with some info -->
+<!-- unimplemented -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="{{url_for('static',filename='achievements.js')}}"></script>
 {% endblock %}

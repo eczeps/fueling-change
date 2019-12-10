@@ -10,6 +10,7 @@
         <ul>
         <li><a href="/">Home</a></li>
         <li><a href="/achievements/">Search Achievements</a></li>
+        <li><a href="/users/">Search Users</a></li>
             {% if isUser and request.method == "GET" %} <!-- hidden until login -->
                 <li><a class="active" href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
@@ -43,11 +44,6 @@
         <form id="achieving" method=POST action="/profile/{{userURL}}/">
             <button id="reportbtn" class="report-button" type="submit" name="submit" value="stats">View My Statistics</button>
             <!-- statistics also includes achievements -->
-        </form>
-        
-        <form id="uSearch" method=POST action="/useraction/">
-            <input id="searchterm" placeholder="Search" name="searchterm">
-            <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
         </form>
 
     <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->

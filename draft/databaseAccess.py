@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "eczepiel_db"
+d = "fchange8_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -14,7 +14,7 @@ d = "eczepiel_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf('~/.my.cnf')
+    dsn = dbi.read_cnf('~/.my.team_cnf')
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
