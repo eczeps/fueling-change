@@ -225,16 +225,40 @@ def useract(user):
 to mark as completed if logged in '''
 @app.route('/achievement/<AID>/', methods= ['POST', 'GET'])
 def achieveinfo(AID):
-    #get information
-    userID = session.get('uID') 
-    #if the user is logged in then allow to self reports 
     conn = databaseAccess.getConn(currDB)
-    info = databaseAccess.getAchieveInfo(conn, AID)
-    users = databaseAccess.getAchievePeople(conn, AID)
+    #get information
+    #if the user is logged in then allow to self report
+    userID = None
+    user_info = None
+    if (session.get('uID') != None):
+        userID = session.get('uID')
+        user_info = databaseAccess.getUser(conn, userID)
+
+    achieve_info = databaseAccess.getAchieveInfo(conn, AID)
+    #returns the UID, first name, last name of users who completed
+    users = databaseAccess.getAchievePeople(conn, AID)  
     return render_template('achieveinfo.html', achieveID = AID, 
-                    info = info, users = users, user = userID)
+                    info = achieve_info, users = users, this_user = userID, 
+                        user_info = user_info)
 
+'''route to update the database when the user clicked "yes" under completed 
+to mark as completed if logged in '''
+@app.route('/updateCompleted', methods= ['POST'])
+def updateCompleted():
+    conn = databaseAccess.getConn(currDB)
+    aid = request.form['aid'] #gets the achievement ID to update 
+    print("achieve id" + aid)
+    #gets user info    
+    #don't need to check if logged in because they need to be logged in to click on the yes button
+    userID = session.get('uID')
+    print(userID)
+    user_info = databaseAccess.getUser(conn, userID)
+    print(user_info)
+    print("notworking :(")
 
+    #update the backend
+    databaseAccess.insertCompleted(conn, userID, aid)
+    return jsonify({'UID': userID, 'first': user_info['first_Name'], 'last': user_info['last_Name']})
 
 
 @app.route('/login/', methods=['GET'])

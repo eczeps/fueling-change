@@ -53,6 +53,14 @@ def getAchievements(conn, searchFor):
                     [searchFor,searchFor,searchFor,searchFor])
     return curs.fetchall()
 
+def insertCompleted(conn, uid, aid):
+    '''inserts into the completed table 
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''insert into completed(UID, AID, count) values(%s,%s, 1);''',
+                    [uid, aid])
+    return curs.fetchone()
+
 def getAllAchievements(conn):
     '''Returns the AID, title, description, isRepeatable, isSelfReport 
     of all achievements, as a list of dictionaries.
