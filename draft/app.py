@@ -13,7 +13,7 @@ import databaseAccess
 #TODO: (ALISSA) implement flashing!!! it doesn't show up in the template right now
 #TODO: (ELLIE) Figure out team database
 #TODO: (ELLIE) figure out salts
-#TODO: (ESTRELLA) finish go & completed buttons
+#TODO: (ESTREL  LA) finish go & completed buttons
 #TODO: (ALISSA) fixing the profile routes so people can view other peoples' profiles
 #TODO: (ALISSA) implement user search
 #TODO: (ESTRELLA) if there's time, add more Go buttons & skeleton for starring

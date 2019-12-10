@@ -53,7 +53,7 @@
         {% set aID = achievement['AID'] %}
         {% set repeatable = achievement['isRepeatable'] %}
         <tr data-tt="{{aID}}">
-            <td id="title">{{achievement['title']}}</td>
+            <td id="title"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
             <td id="description">{{achievement['description']}}</td>
             <td class="small" id="repeatable"> 
                 <!-- don't use id bc it's a loop -->
@@ -63,17 +63,26 @@
                     No
                 {% endif %}</td>
             
-            
-            {% if isLoggedIn != None %}
+                <!-- <td class = "small">
+                    <form method="POST" action="{{url_for('achieveinfo', AID = achievement['AID'])}}">
+                        <button type = "submit" class="report-button">Go!</a></button>
+                    </form>
+                </td> -->
+
+                <!-- <td><button class="go_button"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td> -->
+                <!-- <td><button class="report_button">Go!</a></button></td> -->
+
+       
+           {% if isLoggedIn != None %}
                 <!-- user has it, it's repeatable, and it's self-reportable -->
                 {% if aID in reps and repeatable == 1 and achievement['isSelfReport'] == 1 %}
-                    <td class="small"><button class="report-button"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
                 <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
                 {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %}
-                    <td class="small"><button class="report-button"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
                 <!-- user doesn't have it and it's self-reportable -->
                 {% elif not aID in reps and achievement['isSelfReport'] == 1 %}
-                    <td class="small"><button class="report-button"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
                 {% endif %}
             {% endif %}
         </tr>
