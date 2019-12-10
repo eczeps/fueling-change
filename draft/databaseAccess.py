@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "fchange8_db"
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -14,7 +14,7 @@ d = "fchange8_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf('~/.my.team_cnf')
+    dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
@@ -158,9 +158,9 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                             servings_turkey=%s,
                             servings_chicken=%s,
                             laundry=%s,
-                            has_carbon_data=true
-                    where UID=%s''', [UID, flights, driving, \
-                    lamb, beef, cheese, pork, turkey, chicken, laundry])
+                            has_carbon_data=%s
+                    where UID=%s''', [flights, driving, \
+                    lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
 
 
 def doesUserHaveCarbonData(conn, UID):
