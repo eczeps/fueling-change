@@ -14,7 +14,7 @@ d = "eczepiel_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf()
+    dsn = dbi.read_cnf('~/.my.cnf')
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
@@ -181,6 +181,7 @@ def calculateUserFootprint(conn, UID):
                     from user where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
+    print('userData in databaseaccess: ' + str(userData))
     total = calculator.plane_emissions(userData['miles_flown']) \
             + calculator.car_emissions(userData['miles_driven']) \
             + calculator.meat_emissions(userData['servings_lamb'], \
@@ -216,9 +217,8 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
                     [username, hashed_password, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 
-                    and password = %s 
-                    and salt = %s''', 
-                    [username, hashed_password, salt])
+                    and password = %s''', 
+                    [username, hashed_password])
     return curs.fetchone()
 
 #TODO: delete this once logins & signups are working
