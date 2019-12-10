@@ -1,11 +1,11 @@
-{% extends "main.html" %}
+{% extends "achievementSearch.html" %}
 
 {% block navigation %}
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
-        <li><a class="active" href="/achievements/">Search Achievements</a></li>
-        <li><a href="/users/">Search Users</a></li>
+        <li><a href="/achievements/">Search Achievements</a></li>
+        <li><a class="active" href="/users/">Search Users</a></li>
             {% if isLoggedIn %} <!-- hidden until login -->
                 <li><a href="/profile/{{userURL}}/">My Profile</a></li>
                 <li><a href="/login/">Log Out</a></li>
@@ -18,9 +18,9 @@
 
 
 {% block search %}
-<form id="searchTop" method=POST action="/achievements/">
-    <input id="searchtermTop" placeholder="Search" name="searchterm">
-    <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+<form id="uSearch" method=POST action="/useraction/">
+    <input id="searchterm" placeholder="Search" name="searchterm">
+    <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
 </form>
 {% endblock %}
 
@@ -50,7 +50,7 @@
         </tr>
         
         <!--iterate over achievements in the search results and display them in a table-->
-        {% for achievement in achievements %}
+        {% for usr in users %}
         {% set aID = achievement['AID'] %}
         {% set repeatable = achievement['isRepeatable'] %}
         <tr data-tt="{{aID}}">
@@ -73,22 +73,19 @@
                 <!-- <td><button class="go_button"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td> -->
                 <!-- <td><button class="report_button">Go!</a></button></td> -->
 
-                <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
-            
-            <!-- reuse this later for the stars i think -->
-            <!-- {% if isLoggedIn != None %} -->
+       
+           {% if isLoggedIn != None %}
                 <!-- user has it, it's repeatable, and it's self-reportable -->
-                <!-- {% if aID in reps and repeatable == 1 and achievement['isSelfReport'] == 1 %} -->
-                    <!-- <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td> -->
+                {% if aID in reps and repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
                 <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
-                <!-- {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %} -->
-                    <!-- <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td> -->
+                {% elif repeatable == 1 and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
                 <!-- user doesn't have it and it's self-reportable -->
-                <!-- {% elif not aID in reps and achievement['isSelfReport'] == 1 %} -->
-                    <!-- <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td> -->
-                <!-- {% endif %} -->
-            <!-- {% endif %} -->
-            
+                {% elif not aID in reps and achievement['isSelfReport'] == 1 %}
+                    <td class="small"><button class="report-button"><a window.location.href="{{url_for('achieveinfo', AID = achievement['AID'])}}">Go!</a></button></td>
+                {% endif %}
+            {% endif %}
         </tr>
         {% endfor %}
     </table>
