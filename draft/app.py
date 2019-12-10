@@ -225,11 +225,15 @@ to mark as completed if logged in '''
 @app.route('/achievement/<AID>/', methods= ['POST', 'GET'])
 def achieveinfo(AID):
     #get information
+    userID = session.get('uID') 
+    #if the user is logged in then allow to self reports 
     conn = databaseAccess.getConn(currDB)
     info = databaseAccess.getAchieveInfo(conn, AID)
     users = databaseAccess.getAchievePeople(conn, AID)
     return render_template('achieveinfo.html', achieveID = AID, 
-                    info = info, users = users)
+                    info = info, users = users, user = userID)
+
+
 
 
 @app.route('/login/', methods=['GET'])

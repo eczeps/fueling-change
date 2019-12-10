@@ -5,6 +5,10 @@ $(".report-button").click(add_achieve);
 
 var clicked = false;
 
+/*
+* @param event
+* changes the text of the button to oops and sends request
+*/
 function add_achieve(event){
     console.log("clicked");
     if (clicked == false){
@@ -14,6 +18,8 @@ function add_achieve(event){
         $(this).text("Yes!");
         clicked = false;
     }
+    var AID  = $(this).closest("tr").attr('data-tt');
+    console.log(AID);
 }
 
 /*
@@ -22,11 +28,7 @@ function add_achieve(event){
 * of the row that was clicked, then shows the div
 */
 function reroute(event) {
-    var num  = $(this).closest("tr").attr('data-tt');
-    console.log(num);
-    console.log("hey");
-    var URL = "{{url_for('achieveinfo', AID = " + num + ")}}";
-    var URL1 = "{{urld_for('index')}}"
-    console.log(URL);
-    window.location.href = URL;
+    var AID  = $(this).closest("tr").attr('data-tt');
+    console.log(AID);
+    console.log("clicked");
 }

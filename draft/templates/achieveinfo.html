@@ -6,8 +6,8 @@
 <p>{{info['description']}}</p>
 <!-- Allow the user to check this as completed-->
 {%  if info['isSelfReport'] == 1: %}
-    <p> Did you complete this achievement?</p>
-    <button class="report-button">Yes!</button>
+    <p>{{user}}</p>
+    <!-- <button class="report-button">Yes!</button> -->
 {% endif %}
 <!-- implement an undo function if they accidentally mark as completed-->
 
