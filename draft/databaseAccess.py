@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "fchange8_db"
+d = "egarcia2_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -14,7 +14,7 @@ d = "fchange8_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf('~/.my.team_cnf')
+    dsn = dbi.read_cnf()
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
@@ -52,6 +52,14 @@ def getAchievements(conn, searchFor):
                     or isSelfReport like %s''',
                     [searchFor,searchFor,searchFor,searchFor])
     return curs.fetchall()
+
+def insertCompleted(conn, uid, aid):
+    '''inserts into the completed table 
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''insert into completed(UID, AID, count) values(%s,%s, 1);''',
+                    [uid, aid])
+    return curs.fetchone()
 
 def getAllAchievements(conn):
     '''Returns the AID, title, description, isRepeatable, isSelfReport 

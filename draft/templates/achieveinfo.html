@@ -5,16 +5,18 @@
 <!-- Display the description-->
 <p>{{info['description']}}</p>
 <!-- Allow the user to check this as completed-->
-{%  if info['isSelfReport'] == 1: %}
-    <p>{{user}}</p>
-    <!-- <button class="report-button">Yes!</button> -->
+{%  if info['isSelfReport'] == 1 and this_user != None: %}
+    <!-- <p>{{user}}</p> -->
+    <p>Did you complete this achievement?</p>>
+    <button data-tt="{{achieveID}}" class="report-button">Yes!</button>
+    <p>{{logged_in}}</p>
 {% endif %}
 <!-- implement an undo function if they accidentally mark as completed-->
 
 <!-- Display all the people who have completed this achievement-->
 {% if users |length != 0: %}
 
-<h2>User's who have reached this achievement!</h2> 
+<h2 id = "users_list">User's who have reached this achievement!</h2> 
 
 <table id= "achievers"> 
     <tr>
@@ -24,8 +26,8 @@
     </tr>
 
     {% for user in users %}
-    <tr data-id = ""> 
-        <td id ="first">{{user['first_Name']}}</td>
+    <tr data-id = "{{user['AID']}}"> 
+        <td><span id ="first">{{user['first_Name']}}</span></td>
         <td id ="last">{{user['last_Name']}}</td>
         <td id ="count">1</td>
     </tr>
@@ -35,7 +37,7 @@
 
 {% else %}
 
-<h2>Be the first to reach this achievement!</h2>
+<h2 id = "no_users_yet">Be the first to reach this achievement!</h2>
 
 {% endif %}
 
@@ -43,9 +45,9 @@
 {% endblock %}
 
 {% block JSJQ %}
-<!-- need delegated handler to go to the right page -->
-<!-- each self-reported achievement has its own generated page with some info -->
-<!-- unimplemented -->
+<script>
+var URL = "{{url_for('updateCompleted')}}";
+</script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="{{url_for('static',filename='achievements.js')}}"></script>
 {% endblock %}
