@@ -52,6 +52,7 @@ def index():
     user = ""
     #userID will either be the user's number or None if they're not logged in
     userID = session.get('uID')
+    print('userID in index route: ' + str(userID))
 
     if userID != None:
         userInfo = databaseAccess.getUser(conn, userID)
@@ -124,23 +125,29 @@ def profile(user):
     #TODO: see hwk6 to handle when user is an empty string (see movies route)
     if (userID!=None): #TODO: add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
-        userInfo = databaseAccess.getUser(conn, current_uID)
+        userInfo = databaseAccess.getUser(conn, userID)
 
 
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
-        userURL = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower() + '-' + str(current_uID)
+        userURL = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower() + '-' + str(userID)
         #TODO: is there a better way to format this line: (basically converting from None to False if we have to)
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
 
         #get achievements
-        allComps = databaseAccess.getCompAchievements(conn, current_uID)
-        allStars = databaseAccess.getStarAchievements(conn, current_uID)
+        allComps = databaseAccess.getCompAchievements(conn, userID)
+        allStars = databaseAccess.getStarAchievements(conn, userID)
 
         #calculate emissions
-        emissionsRAW = databaseAccess.calculateUserFootprint(conn, current_uID)
-        emissions = databaseAccess.prettyRound(emissionsRAW)
+        has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, userID)
+        print('has_carbon_data in profile route: ' + str(has_carbon_data))
+        if has_carbon_data:
+            print('has carbon data!!')
+            emissionsRAW = databaseAccess.calculateUserFootprint(conn, userID)
+            emissions = databaseAccess.prettyRound(emissionsRAW)
+        else:
+            emissions = 0
     
         return render_template('profile.html',  title=titleString,
                                                 emissions = format(emissions, ','),
@@ -149,8 +156,8 @@ def profile(user):
                                                 userURL=userURL,
                                                 #this is what used to be here, unsure what currUser was supposed to be for?
                                                 #isUser=currUser, #currUser was an id of the logged in person
-                                                isUser=current_uID, #will this be -1 if it needs to be?
-                                                searched=didSearch,
+                                                isUser=userID, #will this be -1 if it needs to be?
+                                                searched=session.get('didSearch'),
                                                 compAchis=allComps,
                                                 starAchis=allStars)
     #TODO: make it so users can view other peoples profiles if they're logged in (add an elif here)
@@ -164,8 +171,9 @@ def profile(user):
 '''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
+    #TODO: @Alissa not sure why we need didSearch here? might be worth re-checking :)
     didSearch = session.get('didSearch') #boolean
-    UID = user.split('-')[2] #format was first-lastname-UID
+    UID = session.get('uID') #format was first-lastname-UID
     #get information
     conn = databaseAccess.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering
@@ -250,16 +258,22 @@ def setUID():
         password = request.form.get('password')
         conn = databaseAccess.getConn(currDB)
         #userID will either be the user's ID or -1 if it was an invalid username/password combo. this also returns the hashed password
-        row = databaseAccess.getUIDOnLogin(conn, username, hashed_password)
-        row['UID'] = userID
-        row['password'] = hashed_password
+        row = databaseAccess.getUIDOnLogin(conn, username)
+        print(str(row))
+        userID = row['UID']
+        hashed_password = row['password']
+        print('got all necessary data in login')
         if userID == -1:
+            print('database didnt think your username was legit')
             flash("login incorrect. Try again or join")
             return redirect(url_for('index'))
         else:
             hashed2 = bcrypt.hashpw(password.encode('utf-8'),hashed_password.encode('utf-8'))
             hashed2_str = hashed2.decode('utf-8')
-            if hashed2_str == hashed:
+            print('hashed_password: ' + hashed_password)
+            print('hashed2_str: ' + hashed2_str)
+            if hashed2_str == hashed_password:
+                print('your password was right! logging you in')
                 flash('successfully logged in as '+username)
                 session['uID'] = userID
                 #TODO: change this redirect to go to the profile page. Currently can't
@@ -267,10 +281,12 @@ def setUID():
                 #^^have the form ask for the user's name too!
                 return redirect(url_for('index'))
             else:
+                print('your password was prob wrong')
                 flash('login incorrect. Try again or join')
                 return redirect(url_for('index'))
     except Exception as err:
-        flash('form submission error '+str(err))
+        print('error in login: ' + str(err))
+        flash('form submission error '+ str(err))
         return redirect( url_for('index') )
 
 
@@ -286,6 +302,7 @@ def signup():
             passwd1 = request.form['password1']
             passwd2 = request.form['password2']
             if passwd1 != passwd2:
+                print('passwords do not match')
                 flash('passwords do not match')
                 return redirect( url_for('signup'))
             #hash the password the user provided
@@ -297,18 +314,23 @@ def signup():
             fName = request.form.get('firstName')
             lName = request.form.get('lastName')
             conn = databaseAccess.getConn(currDB)
-            uID = databaseAccess.setUIDOnSignup(conn, username, hashed_str, fName, lName)
+            uID = databaseAccess.setUIDOnSignup(conn, username, hashed_str, fName, lName)['UID']
+            #if this is a dictionary make it a string
+            print('uID after signup: ' + str(uID))
             if uID != -1:
+                print('logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
                 #TODO: change this redirect to go to the user's profile
                 return redirect(url_for('index'))
             else:
+                print('username already taken on signup')
                 session['uID'] = None
                 flash("that username is already taken! try again")
                 return redirect( url_for('signup'))
             return redirect(url_for('profile', user=session.get('uID')))
         except Exception as e:
+            print('form submission error in signup: ' + str(e))
             flash("form submission error :( try again!")
             return redirect( url_for('index'))
     

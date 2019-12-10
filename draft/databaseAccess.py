@@ -14,7 +14,7 @@ d = "egarcia2_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf()
+    dsn = dbi.read_cnf('~/.my.cnf')
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
@@ -157,9 +157,16 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                             servings_pork=%s,
                             servings_turkey=%s,
                             servings_chicken=%s,
-                            laundry=%s
+                            laundry=%s,
+                            has_carbon_data=true
                     where UID=%s''', [UID, flights, driving, \
                     lamb, beef, cheese, pork, turkey, chicken, laundry])
+
+
+def doesUserHaveCarbonData(conn, UID):
+    curs = dbi.dictCursor(conn)
+    curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
+    return curs.fetchone()['has_carbon_data']
 
 
 def calculateUserFootprint(conn, UID):
@@ -181,6 +188,7 @@ def calculateUserFootprint(conn, UID):
                     from user where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
+    print('userData in databaseaccess: ' + str(userData))
     total = calculator.plane_emissions(userData['miles_flown']) \
             + calculator.car_emissions(userData['miles_driven']) \
             + calculator.meat_emissions(userData['servings_lamb'], \
@@ -211,14 +219,13 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #returns the uid the database created for this user
     #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into user (username, password, first_Name, last_Name) 
-                    values (%s, %s, %s, %s)''',
+    curs.execute('''insert into user (username, password, first_Name, last_Name, has_carbon_data) 
+                    values (%s, %s, %s, %s, false)''',
                     [username, hashed_password, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 
-                    and password = %s 
-                    and salt = %s''', 
-                    [username, hashed_password, salt])
+                    and password = %s''', 
+                    [username, hashed_password])
     return curs.fetchone()
 
 #TODO: delete this once logins & signups are working
