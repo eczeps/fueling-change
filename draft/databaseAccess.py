@@ -166,9 +166,9 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                             servings_turkey=%s,
                             servings_chicken=%s,
                             laundry=%s,
-                            has_carbon_data=true
-                    where UID=%s''', [UID, flights, driving, \
-                    lamb, beef, cheese, pork, turkey, chicken, laundry])
+                            has_carbon_data=%s
+                    where UID=%s''', [flights, driving, \
+                    lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
 
 
 def doesUserHaveCarbonData(conn, UID):
