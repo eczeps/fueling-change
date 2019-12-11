@@ -84,27 +84,27 @@ def insertCompleted(conn, uid, aid):
     #still buggy
 
     #returns 1 if row exists
-    rowExists=curs.execute('''select exists(select * 
-                                    from completed 
-                                    where UID=%s and AID=%s)''',
-                              [uid, aid])
-    isRepeatable = getIsRepeatable(conn, aid)
-    isSelfReport = getIsSelfReport(conn, aid)
+    # rowExists=curs.execute('''select exists(select * 
+    #                                 from completed 
+    #                                 where UID=%s and AID=%s)''',
+    #                           [uid, aid])
+    # isRepeatable = getIsRepeatable(conn, aid)
+    # isSelfReport = getIsSelfReport(conn, aid)
 
-    if rowExists==1:
-        if isRepeatable:
-            print("if statement")
-            currCount = curs.execute('''select count 
-                                    from completed 
-                                    where UID=%s and AID=%s)''',
-                                 [uid, aid])
-            updatedCount = currCount + 1
+    # if rowExists==1:
+    #     if isRepeatable:
+    #         print("if statement")
+    #         currCount = curs.execute('''select count 
+    #                                 from completed 
+    #                                 where UID=%s and AID=%s)''',
+    #                              [uid, aid])
+    #         updatedCount = currCount + 1
 
-            curs.execute('''update completed set count=%s where UID=%s and AID=%s''',
-                    [updatedCount, uid, aid])
-    else:
-        print("else statement")
-        curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
+    #         curs.execute('''update completed set count=%s where UID=%s and AID=%s''',
+    #                 [updatedCount, uid, aid])
+    # else:
+    #     print("else statement")
+    curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
                     [uid, aid])
     return curs.fetchone()
 
