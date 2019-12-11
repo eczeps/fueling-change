@@ -27,7 +27,7 @@ H2 {
 }
 
 #messages { 
-    color: red;
+    color: purple;
     font-size: large;
 	font-style: italic;
 }
@@ -95,10 +95,12 @@ li {
   
 li a {
     display: block;
-    color: var(--cream);
+    color: yellow;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
+    font-weight: bold;
+    font-size: 20px;
     border-bottom: 10px solid var(--blue);
 }
   

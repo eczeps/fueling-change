@@ -19,7 +19,7 @@
 
 {% block search %}
 <form id="uSearch" method=POST action="/users/">
-    <input id="searchterm" placeholder="Search" name="searchterm">
+    <label>Search: <input id="searchterm" placeholder="Search" name="searchterm"></label>
     <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
 </form>
 {% endblock %}

@@ -28,6 +28,7 @@ function append_achiever(AID, first, last, username, count){ //should take in a 
     $("#achievers").append(rowitem);
 }
 
+// TODO: make the hyperlink appear
 function append_achiever2(resp){ //should take in a response 
     var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">' + resp.first + 
     '</td> <td class ="last">' + resp.last + '</td> <td class ="username">' + 

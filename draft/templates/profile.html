@@ -46,7 +46,48 @@
     <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
     <!-- (2) Another account OR their account and not logged in -->
     {% else %}
-    <h1>Please use the <i>Search Users</i> tab to view other profiles.</h1>
-    <p>Is this your profile? Please log in.</p>
+    <h1>Viewing {{title}}'s Achievements</h1>
+        <!-- user statistics, percentiles, and footprint -->
+        <!-- footprint here -->
+        <p>Emissions: {{emissions}} kilograms of carbon dioxide per year</p>
+        
+        <!-- use a class="exlong" for whatever the largest element is -->
+        <!-- completed achievements -->
+        <div class="centerme">
+        <h2><u>Completed Achievements</u></h2>
+        <table class="exlong" id="completedAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Count</th>
+            </tr>
+            
+            {% for achievement in compAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+                <td class="count">{{achievement['count']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <!-- starred achievements -->
+        <h2><u>Starred Achievements</u></h2>
+        <table id="starredAchieves">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+            
+            {% for achievement in starAchis %}
+            {% set aID = achievement['AID'] %}
+            <tr data-tt="{{aID}}">
+                <td class="title">{{achievement['title']}}</td>
+                <td class="description">{{achievement['description']}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        </div> <!-- end of centerme div -->
     {% endif %}
 {% endblock %}

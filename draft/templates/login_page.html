@@ -4,12 +4,15 @@
 
 {% block body %}
 
+<h1>{{title}}</h1>
+
 <form action="{{url_for('setUID')}}" method="POST">
-    Username: <input type="text" name="username" label="username">
-    Password: <input type="password" name="password" label="username">
+    
+    <label>Username:<input type="text" name="username"></label>
+    <label>Password: <input type="password" name="password"></label>
     <input type="submit" value="Log In">
 </form>
 
-<p>Don't have an account yet? Sign up <a href="{{url_for('signup')}}">here!</a></p>
+<p>Don't have an account yet? <a href="{{url_for('signup')}}">Sign up here!</a></p>
 
 {% endblock %}

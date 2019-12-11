@@ -10,13 +10,12 @@ import databaseAccess
 
 #TODO: (ELLIE) Figure out team database
 #TODO: (ELLIE) figure out salts
-#TODO: (ESTREL  LA) finish go & completed buttons
-#TODO: (ALISSA) implement user search
+#TODO: (ESTRELLA) finish go & completed buttons
+#TODO: (ESTRELLA) fix individual achievement page so the table is always present
 #TODO: (ESTRELLA) make templates more inheritey
 #TODO: (ESTRELLA) create google doc for alpha version
 #TODO: run all the code through WAVE (whoever pushes last)
 #TODO: (ESTRELLA) make sure we always use url_for (even in templates)
-#TODO: (ALISSA) comment all the code & do all documentation
 #TODO: (ELLIE) make a powerpoint/outline for the presentation
 #TODO: (ESTRELLA) submit a request for a team shell account, and email him when you do it
 
@@ -336,7 +335,8 @@ def login():
         #user isn't logged in; they're trying to log in
         return render_template('login_page.html',
                                 isLoggedIn=False,
-                                userURL="")
+                                userURL="",
+                                title="Login")
             
 
 @app.route('/setUID/', methods=["POST"])
