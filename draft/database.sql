@@ -49,7 +49,7 @@ create table completed(
     UID int,
     AID int,
 	Primary Key (UID, AID),
-	count int not null default 0,
+	count int not null default 1,
 	ts timestamp DEFAULT CURRENT_TIMESTAMP
 		on update CURRENT_TIMESTAMP,
 	foreign key (UID) references user(UID)

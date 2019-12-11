@@ -8,15 +8,10 @@ import bcrypt
 import sys,os,random,math
 import databaseAccess
 
-#TODO: change the navbar word "Log Out" to say "Log In" when the user isn't logged in
-    #it's currently supposed to do this now, but the log in isn't working for me
-#TODO: (ALISSA) implement flashing!!! it doesn't show up in the template right now
 #TODO: (ELLIE) Figure out team database
 #TODO: (ELLIE) figure out salts
 #TODO: (ESTREL  LA) finish go & completed buttons
-#TODO: (ALISSA) fixing the profile routes so people can view other peoples' profiles
 #TODO: (ALISSA) implement user search
-#TODO: (ESTRELLA) if there's time, add more Go buttons & skeleton for starring
 #TODO: (ESTRELLA) make templates more inheritey
 #TODO: (ESTRELLA) create google doc for alpha version
 #TODO: run all the code through WAVE (whoever pushes last)
