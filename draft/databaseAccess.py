@@ -37,6 +37,20 @@ def getAchievePeople(conn, AID):
                     where AID = %s''', [AID])
     return curs.fetchall()
 
+def getUsers(conn, searchTerm):
+    '''Returns the UID, first name, last name, and username
+    of all users that have a similar field to the search,
+    as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    searchTerm = "%" + searchTerm + "%"
+    curs.execute('''select UID, first_Name, last_Name, username
+                    from user
+                    where first_Name like %s
+                    or last_Name like %s
+                    or username like %s''',
+                    [searchTerm,searchTerm,searchTerm])
+    return curs.fetchall()
 
 def getAchievements(conn, searchFor):
     '''Returns the AID, title, description, isRepeatable, isSelfReport
@@ -54,10 +68,20 @@ def getAchievements(conn, searchFor):
                     [searchFor,searchFor,searchFor,searchFor])
     return curs.fetchall()
 
+def getAllAchievements(conn):
+    '''Returns the AID, title, description, isRepeatable, isSelfReport 
+    of all achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
+                    from achievement''')
+    return curs.fetchall()
+
 def insertCompleted(conn, uid, aid):
     '''inserts into the completed table 
     '''
     curs = dbi.dictCursor(conn)
+    #still buggy
 
     #returns 1 if row exists
     rowExists=curs.execute('''select exists(select * 
@@ -84,15 +108,6 @@ def insertCompleted(conn, uid, aid):
                     [uid, aid])
     return curs.fetchone()
 
-def getAllAchievements(conn):
-    '''Returns the AID, title, description, isRepeatable, isSelfReport 
-    of all achievements, as a list of dictionaries.
-    '''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select AID, title, description, isRepeatable, isSelfReport
-                    from achievement''')
-    return curs.fetchall()
-
 def getCompAchievements(conn, UID):
     '''Returns the AID, title, description, and count of this user's
     completed achievements, as a list of dictionaries.
@@ -105,10 +120,6 @@ def getCompAchievements(conn, UID):
                     on achievement.AID=completed.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
-
-
-#TODO: for the one above and below need to do a join to get title and description
-
 
 def getStarredAchieves(conn, UID):
     '''Returns the AID, title, and description of this user's
@@ -162,6 +173,15 @@ def getReportedAchieves(conn, UID):
                     where UID=%s''', [UID])
 
     return list(map(lambda x: x['AID'], curs.fetchall()))
+
+def getUserByUsername(conn, username):
+    '''Returns user information, as a dictionary.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select UID, first_Name, last_Name, username
+                    from user
+                    where username=%s''', [username])
+    return curs.fetchone()
 
 def getUser(conn, UID):
     '''Returns user information, as a dictionary.

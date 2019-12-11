@@ -29,8 +29,8 @@ function append_achiever(AID, first, last, username, count){ //should take in a 
 }
 
 function append_achiever2(resp){ //should take in a response 
-    var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">"' + resp.first + 
-    '"</td> <td class ="last">"' + resp.last + '"</td> <td class ="username">' + 
+    var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">' + resp.first + 
+    '</td> <td class ="last">' + resp.last + '</td> <td class ="username">' + 
     resp.username + '</td> <td class ="count">' + resp.count + '</td></tr>';
     $("#achievers").append(rowitem);
     console.log("sucess!");

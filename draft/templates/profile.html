@@ -1,9 +1,7 @@
 {% extends "main.html" %} 
-<!-- Four different load cases: -->
-<!-- (1) Their account and user logged IN -->
-<!-- (2) Another account and user logged IN -->
-<!-- (3) User logged OFF and not searched for user yet -->
-<!-- (4) User logged OFF and after successful search for user -->
+<!-- 2 different load cases: -->
+<!-- (1) Their account and logged in -->
+<!-- (2) Another account OR their account and not logged in -->
 
 {% block navigation %}
     <div id="navigation">
@@ -30,7 +28,7 @@
 
 
 {% block body %}
-{% if thisUser %}
+{% if thisUser== %}
     {% if request.method == "GET" %}
         <!-- (1) their own account and logged in -->
         <h1>Hi {{title}}</h1> 
@@ -47,94 +45,9 @@
         </form>
 
     <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-    {% elif request.method == "POST" %}
-        
-        <h1>Viewing {{title}}'s Achievements</h1>
-        <!-- user statistics, percentiles, and footprint -->
-        <!-- use a class="exlong" for whatever the largest element is -->
-        
-        <!-- these are working, inspect to see data-tt -->
-        <!-- completed achievements -->
-        <div class="centerme">
-        <h2><u>Completed Achievements</u></h2>
-        <table class="exlong" id="completedAchieves">
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Count</th>
-            </tr>
-            
-            {% for achievement in compAchis %}
-            {% set aID = achievement['AID'] %}
-            <tr data-tt="{{aID}}">
-                <td class="title"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
-                <td class="description">{{achievement['description']}}</td>
-                <td class="count">{{achievement['count']}}</td>
-            </tr>
-            {% endfor %}
-        </table>
-
-        <!-- starred achievements -->
-        <h2><u>Starred Achievements</u></h2>
-        <table id="starredAchieves">
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-            </tr>
-            
-            {% for achievement in starAchis %}
-            {% set aID = achievement['AID'] %}
-            <tr data-tt="{{aID}}">
-                <td class="title"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
-                <td class="description">{{achievement['description']}}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        </div> <!-- end of centerme div -->
-    {% endif %}
-
-
-<!-- ############################################### -->
-{% elif isLoggedIn != None or searched == True %}
-    <!-- (2) another account and logged in -->
-    <!-- (4) successful search for user -->
-    <!-- the key difference between these is the navigation bar -->
-    <!-- this shows the statistics page automatically -->
-    <h1>Viewing {{title}}'s Achievements</h1>
-
-    <!-- other user statistics, percentiles, and footprint -->
-        
-    <!-- idk if this works -->
-    <!-- completed achievements only -->
-    <div class="centerme">
-    <h2><u>Completed Achievements</u></h2>
-    <table id="completedAchieves">
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th class="small">Count</th>
-        </tr>
-        
-        {% for achievement in compAchis %}
-        {% set aID = achievement['AID'] %}
-        <tr data-tt="{{aID}}">
-            <td class="title"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
-            <td class="description">{{achievement['description']}}</td>
-            <td class="count">{{achievement['count']}}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    </div> <!-- end of centerme div -->
-
-<!-- ############################################### -->
-{% else %}
-    <!-- (3) user logged off and not searched yet -->
-    <h1>Search for User</h1>
-
-    <form id="uSearch" method=POST action="/useraction/">
-        <input id="searchterm" placeholder="Search" name="searchterm">
-        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search for User</button>
-    </form>
-
+    <!-- (2) Another account OR their account and not logged in -->
+    {% else %}
+    <h1>Please use the <i>Search Users</i> tab to view other profiles.</h1>
+    <p>Is this your profile? Please log in.</p>
 {% endif %}
 {% endblock %}

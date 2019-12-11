@@ -1,14 +1,14 @@
 {% extends "userSearch.html" %}
 
 {% block body %}
-{% if thisUser %}
-    {% if request.method == "POST" %}
+    {% if request.method == "GET" %}
         
         <h1>Viewing {{title}}'s Achievements</h1>
         <!-- user statistics, percentiles, and footprint -->
-        <!-- use a class="exlong" for whatever the largest element is -->
+        <!-- footprint here -->
+        <p>Emissions: {{emissions}} kilograms of carbon dioxide per year</p>
         
-        <!-- these are working, inspect to see data-tt -->
+        <!-- use a class="exlong" for whatever the largest element is -->
         <!-- completed achievements -->
         <div class="centerme">
         <h2><u>Completed Achievements</u></h2>
@@ -47,5 +47,4 @@
         </table>
         </div> <!-- end of centerme div -->
     {% endif %}
-
 {% endblock %}

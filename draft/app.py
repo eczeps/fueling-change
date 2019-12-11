@@ -41,7 +41,6 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 '''handles the homepage route, and handles both when users are logged in and when they aren't'''
 @app.route('/')
 def index():
-    session['didSearch'] = False #used to tell apart (3) and (4) in profile.html
     conn = databaseAccess.getConn(currDB)
     #--accessing current user information
     #userID will either be the user's number or None if they're not logged in
@@ -105,11 +104,33 @@ def achievement(searchFor):
 @app.route('/users/', methods = ['POST', 'GET'], defaults={'userSearch': ""})
 @app.route('/users/<userSearch>', methods = ['POST', 'GET'])
 def users(userSearch):
+    conn = databaseAccess.getConn(currDB)
+    #find the users that have a matching search term in their
+    #first, last, or username
+    #if the user is searching for something, access the database to get search results
+    userSearch = request.form.get('searchterm')
+    userID=session.get('uID')
+
+    username=""
+    if userID != None:
+        username=databaseAccess.getUser(conn, userID)['username']
+
+    if request.method == 'POST':
+        a = []
+        if(userSearch != ""):
+            print("RIGHT HERE")
+            print(userSearch)
+            a = databaseAccess.getUsers(conn,userSearch)
+
+    #if the user is just loading the page, show them nothing
+    elif request.method == 'GET':
+        userSearch = ''
+        a = []
+    
     return render_template('userSearch.html',title=userSearch,
                                              users=a,
                                              isLoggedIn=(True if userID!=None else False),
-                                             reps=rep,
-                                             userURL=user)
+                                             userURL=username)
 
 #want to use below for user searches which will display a list based on search result.
 #similar to the actor search in one of our assignments
@@ -127,7 +148,6 @@ def profile(username):
     if (userID!=None): #TODO: add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
         userInfo = databaseAccess.getUser(conn, userID)
-
 
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
@@ -156,22 +176,17 @@ def profile(username):
                                                 isLoggedIn=(True if userID!=None else False),
                                                 userURL=userURL,
                                                 thisUser=userID, #will this be -1 if it needs to be?
-                                                searched=session.get('didSearch'),
                                                 compAchis=allComps,
                                                 starAchis=allStars)
     #TODO: make it so users can view other peoples profiles if they're logged in (add an elif here)
     else:
-        didSearch = session.get('didSearch') #boolean
         #user isn't logged in
-        #they should be able to view a limited version of anybody's profile though.
         flash('you aren\'t logged in!')
         return redirect(url_for('login'))
 
 '''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
-    #TODO: @Alissa not sure why we need didSearch here? might be worth re-checking :)
-    didSearch = session.get('didSearch') #boolean
     UID = session.get('uID') #format was first-lastname-UID
     #get information
     conn = databaseAccess.getConn(currDB)
@@ -197,7 +212,6 @@ search users
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
 @app.route('/useraction/<user>/', methods=['POST', 'GET'])
 def useract(user):
-    didSearch = session.get('didSearch') #boolean
     
 
     #TODO: do we want to change this so that you can only view your own profile?
@@ -206,7 +220,7 @@ def useract(user):
     #The if/else's I (alissa) set up should prevent randos from editing: see profile.html
 
     #grab the user id
-    UID = user.split('-')[2] #format first-lastname-UID
+    UID = session.get('uID')
 
     #get information
     conn = databaseAccess.getConn(currDB)
@@ -218,6 +232,43 @@ def useract(user):
     return render_template('useraction.html', isLoggedIn=currUser,
                                                 userURL=user,
                                                 thisUser=session['uID'])
+
+
+'''route to display information for a given achievement and allows the user 
+to mark as completed if logged in '''
+@app.route('/searched-profile/<user>/', methods= ['POST', 'GET'])
+def searchedProfile(user):
+    conn = databaseAccess.getConn(currDB)
+    #need for if the user selects their profile tab
+    userID = session.get('uID')
+
+    #this is the searched for information
+    searchedInfo = databaseAccess.getUserByUsername(conn, user)
+    nameTitle = searchedInfo['first_Name'] + " " + searchedInfo['last_Name']
+    searchedID = searchedInfo['UID']
+
+    #achievements of the seached user that we want to look at
+    allComps = databaseAccess.getCompAchievements(conn, searchedID)
+    allStars = databaseAccess.getStarredAchieves(conn, searchedID)
+
+    #calculate emissions of the searched user
+    has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, searchedID)
+    # print('has_carbon_data in profile route: ' + str(has_carbon_data))
+    if has_carbon_data:
+        print('has carbon data!!')
+        emissionsRAW = databaseAccess.calculateUserFootprint(conn, searchedID)
+        emissions = databaseAccess.prettyRound(emissionsRAW)
+    else:
+        #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
+        emissions = 0
+
+    return render_template('searchedProfile.html', title = nameTitle,
+                                                   thisUser = userID, #in nav bar
+                                                   isLoggedIn = (True if userID!=None else False),
+                                                   emissions = emissions,
+                                                   compAchis = allComps,
+                                                   starAchis = allStars)
+
 
 '''route to display information for a given achievement and allows the user 
 to mark as completed if logged in '''
@@ -248,19 +299,20 @@ to mark as completed if logged in '''
 def updateCompleted():
     conn = databaseAccess.getConn(currDB)
     aid = request.form['aid'] #gets the achievement ID to update 
-    print("achieve id" + aid)
-    #gets user info    
+    print("achieve id" + aid) 
     #don't need to check if logged in because they need to be logged in to click on the yes button
     userID = session.get('uID')
     print(userID)
-    grabData = databaseAccess.getUserForAchievement(conn, userID, aid)
-    user_info = grabData[0]
-    hasCount = grabData[1]
-    print("HERE")
-    print(user_info)
 
     #update the backend
     databaseAccess.insertCompleted(conn, userID, aid)
+    
+    grabData = databaseAccess.getUserForAchievement(conn, userID, aid)
+    user_info = grabData[0]
+    hasCount = grabData[1]
+    print(user_info)
+
+    print("HERE")
     return jsonify({'UID': userID,
                     'first': user_info['first_Name'],
                     'last': user_info['last_Name'],
