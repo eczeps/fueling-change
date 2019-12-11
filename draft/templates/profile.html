@@ -28,7 +28,6 @@
 
 
 {% block body %}
-{% if thisUser== %}
     {% if request.method == "GET" %}
         <!-- (1) their own account and logged in -->
         <h1>Hi {{title}}</h1> 
@@ -49,5 +48,5 @@
     {% else %}
     <h1>Please use the <i>Search Users</i> tab to view other profiles.</h1>
     <p>Is this your profile? Please log in.</p>
-{% endif %}
+    {% endif %}
 {% endblock %}

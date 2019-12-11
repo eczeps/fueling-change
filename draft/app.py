@@ -145,6 +145,7 @@ def profile(username):
     #we need to decide how to handle loading this page if the user is not logged in (and therefore current_uID is None)
     conn = databaseAccess.getConn(currDB)
     #TODO: see hwk6 to handle when user is an empty string (see movies route)
+    
     if (userID!=None): #TODO: add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
         userInfo = databaseAccess.getUser(conn, userID)
