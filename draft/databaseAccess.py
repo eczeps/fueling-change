@@ -29,10 +29,10 @@ def getAchieveInfo(conn, AID):
     return curs.fetchone()
 
 def getAchievePeople(conn, AID):
-    '''Returns the UID, first_Name, last_Name of people who have completed 
-    this achievement'''
+    '''Returns the UID, first_Name, last_Name, username, and count
+    for people who have completed this achievement'''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select UID, first_Name, last_Name 
+    curs.execute('''select UID, first_Name, last_Name, username, count 
                     from completed inner join user using (UID) 
                     where AID = %s''', [AID])
     return curs.fetchall()
@@ -58,7 +58,23 @@ def insertCompleted(conn, uid, aid):
     '''inserts into the completed table 
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into completed(UID, AID, count) values(%s,%s, 1);''',
+
+    #returns 1 if row exists
+    rowExists=curs.execute('''exists(select * 
+                                    from completed 
+                                    where UID=%s and AID=%s)''',
+                              [uid, aid])
+
+    if rowExists==1:
+        currCount = curs.execute('''select count 
+                                    from completed 
+                                    where UID=%s and AID=%s)''',
+                                 [uid, aid])
+        updatedCount = currCount + 1
+        curs.execute('''insert into completed(UID, AID, count) values(%s,%s,%s);''',
+                    [uid, aid, updatedCount])
+    else:
+        curs.execute('''insert into completed(UID, AID) values(%s,%s);''',
                     [uid, aid])
     return curs.fetchone()
 
