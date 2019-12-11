@@ -30,7 +30,7 @@
     <tr data-id = "{{user['AID']}}"> 
         <td><span class="first">{{user['first_Name']}}</span></td>
         <td class="last">{{user['last_Name']}}</td>
-        <td class="username">{{user['username']}}</td>
+        <td class="username"><a href="{{url_for('profile', username=user['username'])}}">{{user['username']}}</a></td>
         <td class="count">{{user['count']}}</td>
     </tr>
     {% endfor %}
