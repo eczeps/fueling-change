@@ -1,7 +1,7 @@
 {% extends "userSearch.html" %}
 
 {% block body %}
-{% if isUser %}
+{% if thisUser %}
     {% if request.method == "POST" %}
         
         <h1>Viewing {{title}}'s Achievements</h1>

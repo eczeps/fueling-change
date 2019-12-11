@@ -30,9 +30,15 @@
         </div>
     {% endblock %}
 
-    {% block flashing %}
-        <!-- any flashes we want go here -->
-    {% endblock %}
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div id="messages">
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
     
     <div id="slide">
         <script>

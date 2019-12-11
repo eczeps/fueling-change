@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "fchange8_db"
+d = "atinney_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -14,7 +14,8 @@ d = "fchange8_db"
 
 def getConn(db):
     '''Returns a database connection for that db'''
-    dsn = dbi.read_cnf('../../.my.team_cnf')
+    # dsn = dbi.read_cnf('../../.my.team_cnf') # for group db
+    dsn = dbi.read_cnf() #for own db
     conn = dbi.connect(dsn)
     conn.select_db(db)
     return conn
@@ -87,7 +88,7 @@ def getCompAchievements(conn, UID):
 #TODO: for the one above and below need to do a join to get title and description
 
 
-def getStarAchievements(conn, UID):
+def getStarredAchieves(conn, UID):
     '''Returns the AID, title, and description of this user's
     starred achievements, as a list of dictionaries.
     '''
@@ -145,7 +146,8 @@ def getUser(conn, UID):
     '''Returns user information, as a dictionary.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select * from user
+    curs.execute('''select first_Name, last_Name, username
+                    from user
                     where UID=%s''', [UID])
     return curs.fetchone()
 

@@ -49,40 +49,37 @@ def index():
     session['didSearch'] = False #used to tell apart (3) and (4) in profile.html
     conn = databaseAccess.getConn(currDB)
     #--accessing current user information
-    user = ""
     #userID will either be the user's number or None if they're not logged in
     userID = session.get('uID')
     print('userID in index route: ' + str(userID))
 
+    username = ""
     if userID != None:
-        userInfo = databaseAccess.getUser(conn, userID)
-        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
-        user += '-' + str(userInfo['UID'])
+        username = databaseAccess.getUser(conn, userID)['username']
     #else:
-        #not logged in
+        #not logged in profile won't show so we don't need to worry about
+        #username being empty
     #--end of accessing current user information
 
     return render_template('main.html', title="Fueling Change",
                                         isLoggedIn=(True if userID!=None else False),
-                                        userURL=user)
+                                        userURL=username)
 
 
-'''handles the page where users can search for achievements and self-report them'''
+'''handles the page where users can search for achievements'''
 @app.route('/achievements/', methods = ['POST', 'GET'], defaults={'searchFor': ""})
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     conn = databaseAccess.getConn(currDB)
     #--accessing current user information
-    user = ""
     userID = session.get('uID')
-    # rep is short for reportable
-    rep = []
+    # stars is short for starred achievements
+    stars = []
 
+    username = ""
     if userID != None:
-        userInfo = databaseAccess.getUser(conn, userID)
-        user = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower()
-        user += '-' + str(userInfo['UID'])
-        rep = databaseAccess.getReportedAchieves(conn, userID) 
+        username = databaseAccess.getUser(conn, userID)["username"]
+        stars = databaseAccess.getStarredAchieves(conn, userID) 
     #else:
         #not logged in
     #--end of accessing current user information
@@ -105,16 +102,25 @@ def achievement(searchFor):
     return render_template('achievementSearch.html',title=searchFor,
                                                     achievements=a,
                                                     isLoggedIn=(True if userID!=None else False),
-                                                    reps=rep,
-                                                    userURL=user)
+                                                    reps=stars,
+                                                    userURL=username)
 
+
+'''handles the page where users can search for users'''
+@app.route('/users/', methods = ['POST', 'GET'], defaults={'userSearch': ""})
+@app.route('/users/<userSearch>', methods = ['POST', 'GET'])
+def users(userSearch):
+    return render_template('userSearch.html',title=userSearch,
+                                             users=a,
+                                             isLoggedIn=(True if userID!=None else False),
+                                             reps=rep,
+                                             userURL=user)
 
 #want to use below for user searches which will display a list based on search result.
 #similar to the actor search in one of our assignments
-@app.route('/profile/', methods=['POST', 'GET'], defaults={'user': ""})
-# redirect to /profile/searchedfirstname-searchedlastname-searchedUID/
-@app.route('/profile/<user>/', methods=['POST', 'GET'])
-def profile(user):
+@app.route('/profile/', methods=['POST', 'GET'], defaults={'username': ""})
+@app.route('/profile/<username>/', methods=['POST', 'GET'])
+def profile(username):
     #TODO: make the URls just the username, don't have them include the UID
     userID = session.get('uID')
 
@@ -130,14 +136,14 @@ def profile(user):
 
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
-        userURL = userInfo['first_Name'].lower() + '-' + userInfo['last_Name'].lower() + '-' + str(userID)
-        #TODO: is there a better way to format this line: (basically converting from None to False if we have to)
+        userURL = userInfo['username'].lower()
+
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
 
         #get achievements
         allComps = databaseAccess.getCompAchievements(conn, userID)
-        allStars = databaseAccess.getStarAchievements(conn, userID)
+        allStars = databaseAccess.getStarredAchieves(conn, userID)
 
         #calculate emissions
         has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, userID)
@@ -152,12 +158,9 @@ def profile(user):
     
         return render_template('profile.html',  title=titleString,
                                                 emissions = format(emissions, ','),
-                                                #TODO: ditto -- can we reformat this next line better?
                                                 isLoggedIn=(True if userID!=None else False),
                                                 userURL=userURL,
-                                                #this is what used to be here, unsure what currUser was supposed to be for?
-                                                #isUser=currUser, #currUser was an id of the logged in person
-                                                isUser=userID, #will this be -1 if it needs to be?
+                                                thisUser=userID, #will this be -1 if it needs to be?
                                                 searched=session.get('didSearch'),
                                                 compAchis=allComps,
                                                 starAchis=allStars)
@@ -219,7 +222,7 @@ def useract(user):
     currUser = (int(UID) == session['uID']) #boolean
     return render_template('useraction.html', isLoggedIn=currUser,
                                                 userURL=user,
-                                                isUser=session['uID'])
+                                                thisUser=session['uID'])
 
 '''route to display information for a given achievement and allows the user 
 to mark as completed if logged in '''
@@ -238,12 +241,15 @@ def achieveinfo(AID):
     #returns the UID, first name, last name of users who completed
     users = databaseAccess.getAchievePeople(conn, AID)  
     return render_template('achieveinfo.html', achieveID = AID, 
-                    info = achieve_info, users = users, this_user = userID, 
-                        user_info = user_info)
+                                               info = achieve_info,
+                                               users = users,
+                                               thisUser = userID, 
+                                               user_info = user_info,
+                                               isLoggedIn = (True if userID!=None else False))
 
 '''route to update the database when the user clicked "yes" under completed 
 to mark as completed if logged in '''
-@app.route('/updateCompleted', methods= ['POST'])
+@app.route('/updateCompleted/', methods= ['POST'])
 def updateCompleted():
     conn = databaseAccess.getConn(currDB)
     aid = request.form['aid'] #gets the achievement ID to update 
@@ -305,18 +311,16 @@ def setUID():
                 print('your password was right! logging you in')
                 flash('successfully logged in as '+username)
                 session['uID'] = userID
-                #TODO: change this redirect to go to the profile page. Currently can't
-                #because of the way the profile URL relies on having the user's name in it
-                #^^have the form ask for the user's name too!
-                return redirect(url_for('index'))
+                username=databaseAccess.getUser(conn, session.get('uID'))['username']
+                return redirect(url_for('profile', username=username))
             else:
                 print('your password was prob wrong')
                 flash('login incorrect. Try again or join')
-                return redirect(url_for('index'))
+                return redirect(url_for('login'))
     except Exception as err:
         print('error in login: ' + str(err))
         flash('form submission error '+ str(err))
-        return redirect( url_for('index') )
+        return redirect( url_for('login') )
 
 
 
@@ -333,7 +337,7 @@ def signup():
             if passwd1 != passwd2:
                 print('passwords do not match')
                 flash('passwords do not match')
-                return redirect( url_for('signup'))
+                return redirect(url_for('signup'))
             #hash the password the user provided
             hashed = bcrypt.hashpw(passwd1.encode('utf-8'), bcrypt.gensalt())
             #convert it from bytes to string
@@ -350,18 +354,19 @@ def signup():
                 print('logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
-                #TODO: change this redirect to go to the user's profile
-                return redirect(url_for('index'))
+                username = username=databaseAccess.getUser(conn, session.get('uID'))['username']
+                return redirect(url_for('profile', username=username))
             else:
                 print('username already taken on signup')
                 session['uID'] = None
                 flash("that username is already taken! try again")
-                return redirect( url_for('signup'))
-            return redirect(url_for('profile', user=session.get('uID')))
+                return redirect(url_for('signup'))
+            username=databaseAccess.getUser(conn, session.get('uID'))['username']
+            return redirect(url_for('profile', username=username))
         except Exception as e:
             print('form submission error in signup: ' + str(e))
             flash("form submission error :( try again!")
-            return redirect( url_for('index'))
+            return redirect( url_for('login'))
     
 
 
