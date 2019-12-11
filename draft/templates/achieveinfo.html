@@ -5,7 +5,7 @@
 <!-- Display the description-->
 <p>{{info['description']}}</p>
 <!-- Allow the user to check this as completed-->
-{%  if info['isSelfReport'] == 1 and this_user != None: %}
+{%  if info['isSelfReport'] == 1 and thisUser != None: %}
     <!-- <p>{{user}}</p> -->
     <p>Did you complete this achievement?</p>>
     <button data-tt="{{achieveID}}" class="report-button">Yes!</button>

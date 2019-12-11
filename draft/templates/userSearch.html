@@ -41,23 +41,17 @@
     
     <table id="achieves">
         <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th class="small">Repeatable</th>
-            {% if isLoggedIn != None %}
-                <th class="small">Self-Report</th>
-            {% endif %}
+            <th>Name</th>
+            <th>Username</th> <!--link on this.-->
+            <th>Footprint</th>
         </tr>
         
-        <!--iterate over achievements in the search results and display them in a table-->
+        <!--iterate over users in the search results and display them in a table-->
         {% for usr in users %}
-        {% set aID = achievement['AID'] %}
-        {% set repeatable = achievement['isRepeatable'] %}
-        <tr data-tt="{{aID}}">
-            <td id="title"><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
-            <td id="description">{{achievement['description']}}</td>
-            <td class="small" id="repeatable"> 
-                <!-- don't use id bc it's a loop -->
+        <tr>
+            <td><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
+            <td>{{achievement['description']}}</td>
+            <td class="small"> 
                 {% if repeatable == 1 %}
                     Yes
                 {% else %}
