@@ -21,15 +21,17 @@ function add_achieve(event){
     // }
 }
 
-function append_achiever(AID, first, last){ //should take in a response 
-    var rowitem = '<tr data-id = "' + AID + '"> <td id ="first">"' + first + 
-                '"</td> <td id ="last">"' + last + '"</td> <td id ="count">1</td></tr>';
+function append_achiever(AID, first, last, username, count){ //should take in a response 
+    var rowitem = '<tr data-id = "' + AID + '"> <td class ="first">"' + first + 
+                '"</td> <td class ="last">"' + last + '"</td> <td class ="username">' + 
+                username + '</td> <td class ="count">' + count + '</td></tr>';
     $("#achievers").append(rowitem);
 }
 
 function append_achiever2(resp){ //should take in a response 
-    var rowitem = '<tr data-id = "' + resp.UID + '"> <td id ="first">' + resp.first + 
-                '</td> <td id ="last">' + resp.last + '</td> <td id ="count">1</td></tr>'; //implement count!
+    var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">"' + resp.first + 
+    '"</td> <td class ="last">"' + resp.last + '"</td> <td class ="username">' + 
+    resp.username + '</td> <td class ="count">' + resp.count + '</td></tr>';
     $("#achievers").append(rowitem);
     console.log("sucess!");
 }

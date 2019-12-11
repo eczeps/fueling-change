@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "egarcia2_db"
+d = "atinney_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -60,21 +60,27 @@ def insertCompleted(conn, uid, aid):
     curs = dbi.dictCursor(conn)
 
     #returns 1 if row exists
-    rowExists=curs.execute('''exists(select * 
+    rowExists=curs.execute('''select exists(select * 
                                     from completed 
                                     where UID=%s and AID=%s)''',
                               [uid, aid])
+    isRepeatable = getIsRepeatable(conn, aid)
+    isSelfReport = getIsSelfReport(conn, aid)
 
     if rowExists==1:
-        currCount = curs.execute('''select count 
+        if isRepeatable:
+            print("if statement")
+            currCount = curs.execute('''select count 
                                     from completed 
                                     where UID=%s and AID=%s)''',
                                  [uid, aid])
-        updatedCount = currCount + 1
-        curs.execute('''insert into completed(UID, AID, count) values(%s,%s,%s);''',
-                    [uid, aid, updatedCount])
+            updatedCount = currCount + 1
+
+            curs.execute('''update completed set count=%s where UID=%s and AID=%s''',
+                    [updatedCount, uid, aid])
     else:
-        curs.execute('''insert into completed(UID, AID) values(%s,%s);''',
+        print("else statement")
+        curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
                     [uid, aid])
     return curs.fetchone()
 
@@ -121,7 +127,7 @@ def getIsRepeatable(conn, AID):
     for repetition. This is a Boolean return.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select isRepeatable from achievement where AID=%s''' [AID])
+    curs.execute('''select isRepeatable from achievement where AID=%s''', [AID])
     
     #not checking for null cause if that happens it was our fault
     res = curs.fetchone()
@@ -136,7 +142,7 @@ def getIsSelfReport(conn, AID):
     for self report. This is a Boolean return.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select isSelfReport from achievement where AID=%s''' [AID])
+    curs.execute('''select isSelfReport from achievement where AID=%s''', [AID])
     
     #not checking for null cause if that happens it was our fault
     res = curs.fetchone()
@@ -157,7 +163,6 @@ def getReportedAchieves(conn, UID):
 
     return list(map(lambda x: x['AID'], curs.fetchall()))
 
-
 def getUser(conn, UID):
     '''Returns user information, as a dictionary.
     '''
@@ -166,6 +171,23 @@ def getUser(conn, UID):
                     from user
                     where UID=%s''', [UID])
     return curs.fetchone()
+
+def getUserForAchievement(conn, UID, AID):
+    '''Returns the first_Name, last_Name, username, and count
+    for the specified user who has completed this achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select UID, first_Name, last_Name, username, count 
+                    from completed inner join user using (UID)
+                    where UID=%s and AID = %s''', [UID, AID])
+    res = curs.fetchone()
+    hasCount = True
+
+    # means the user hasn't completed this achievement
+    if res==None:
+        res = getUser(conn, UID)
+        hasCount = False
+
+    return (res, hasCount)
 
 def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                     cheese, pork, turkey, chicken, laundry):

@@ -253,13 +253,19 @@ def updateCompleted():
     #don't need to check if logged in because they need to be logged in to click on the yes button
     userID = session.get('uID')
     print(userID)
-    user_info = databaseAccess.getUser(conn, userID)
+    grabData = databaseAccess.getUserForAchievement(conn, userID, aid)
+    user_info = grabData[0]
+    hasCount = grabData[1]
+    print("HERE")
     print(user_info)
-    print("notworking :(")
 
     #update the backend
     databaseAccess.insertCompleted(conn, userID, aid)
-    return jsonify({'UID': userID, 'first': user_info['first_Name'], 'last': user_info['last_Name']})
+    return jsonify({'UID': userID,
+                    'first': user_info['first_Name'],
+                    'last': user_info['last_Name'],
+                    'username': user_info['username'],
+                    'count': user_info['count'] if hasCount else 1})
 
 
 @app.route('/login/', methods=['GET'])

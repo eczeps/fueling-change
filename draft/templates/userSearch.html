@@ -49,7 +49,7 @@
         <!--iterate over users in the search results and display them in a table-->
         {% for usr in users %}
         <tr>
-            <td><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
+            <td><a href="{{url_for('userSearch', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
             <td>{{achievement['description']}}</td>
             <td class="small"> 
                 {% if repeatable == 1 %}
