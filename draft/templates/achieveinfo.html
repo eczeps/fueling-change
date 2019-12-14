@@ -7,8 +7,21 @@
 <!-- Allow the user to check this as completed-->
 {%  if info['isSelfReport'] == 1 and thisUser != None: %}
     <!-- <p>{{user}}</p> -->
-    <p>Did you complete this achievement?</p>>
+    {% if completed: %}
+    <p id = "completed">Congrats! You've completed this achievement!</p>>
+    <button data-tt="{{achieveID}}" class="reset-button">reset</button>
+
+    <!-- add a form here to collect the user's data -->
+    <form id = "self-report" method=POST action="{{url_for('updateRepeatedAchiev')}}">
+        <input type="number" name="new_count" placeholder="{{count}}">
+        <input type= "hidden" name="aid" value="{{achieveID}}">
+        <button type="submit" name="submit">Update!</button>
+    </form>
+
+    {% else %}
+    <p id = "completed">Did you complete this achievement?</p>>
     <button data-tt="{{achieveID}}" class="report-button">Yes!</button>
+    {% endif %}
     <p>{{logged_in}}</p>
 {% endif %}
 <!-- implement an undo function if they accidentally mark as completed-->

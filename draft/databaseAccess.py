@@ -108,6 +108,15 @@ def insertCompleted(conn, uid, aid):
                     [uid, aid])
     return curs.fetchone()
 
+def getUserCompletedthisAchiev(conn, uid, aid):
+    '''Returns UID, AID, count, timestamp from completed if the specified user has 
+    completed the specified achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select * from completed where 
+                    UID=%s and AID=%s''', [uid, aid])
+    return curs.fetchone()
+
+
 def getCompAchievements(conn, UID):
     '''Returns the AID, title, description, and count of this user's
     completed achievements, as a list of dictionaries.
@@ -230,6 +239,12 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                     where UID=%s''', [flights, driving, \
                     lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
 
+def updateCompletedCount(conn, UID, AID, count):
+    ''' updates the count of the specific person and achievement to be count'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''update completed set count = %s 
+                    where UID = %s and AID = %s ''', 
+                        [count, UID, AID])
 
 def doesUserHaveCarbonData(conn, UID):
     curs = dbi.dictCursor(conn)

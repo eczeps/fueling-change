@@ -34,6 +34,7 @@ function append_achiever2(resp){ //should take in a response
     '</td> <td class ="last">' + resp.last + '</td> <td class ="username">' + 
     resp.username + '</td> <td class ="count">' + resp.count + '</td></tr>';
     $("#achievers").append(rowitem);
+    $("#completed").text("Congrats! You've completed this achievement!");
     console.log("sucess!");
 }
 

@@ -279,18 +279,29 @@ def achieveinfo(AID):
     #if the user is logged in then allow to self report
     userID = None
     user_info = None
+    completed_info = None
+    completed = False
+    count = None
     if (session.get('uID') != None):
         userID = session.get('uID')
         user_info = databaseAccess.getUser(conn, userID)
+        #check if the user has already completed this achievement
+        completed_info = databaseAccess.getUserCompletedthisAchiev(conn, userID, AID)
+        if(completed_info != None):
+            completed = True
+            count = completed_info["count"]
 
     achieve_info = databaseAccess.getAchieveInfo(conn, AID)
     #returns the UID, first name, last name of users who completed
-    users = databaseAccess.getAchievePeople(conn, AID)  
+    users = databaseAccess.getAchievePeople(conn, AID)
+
     return render_template('achieveinfo.html', achieveID = AID, 
                                                info = achieve_info,
                                                users = users,
                                                thisUser = userID, 
                                                user_info = user_info,
+                                               completed = completed,
+                                               count = count,
                                                isLoggedIn = (True if userID!=None else False))
 
 '''route to update the database when the user clicked "yes" under completed 
@@ -318,6 +329,16 @@ def updateCompleted():
                     'last': user_info['last_Name'],
                     'username': user_info['username'],
                     'count': user_info['count'] if hasCount else 1})
+
+
+@app.route('/updateRepeatedAchiev', methods= ['POST'])
+def updateRepeatedAchiev():
+    conn = databaseAccess.getConn(currDB)
+    userID = session.get('uID')
+    aid = request.form["aid"]
+    new_count = request.form["new_count"]
+    databaseAccess.updateCompletedCount(conn, userID, aid, new_count)
+    return redirect(url_for('achieveinfo', AID = aid))
 
 
 @app.route('/login/', methods=['GET'])
