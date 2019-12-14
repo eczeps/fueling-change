@@ -38,11 +38,15 @@ function append_achiever(AID, first, last, username, count){ //should take in a 
 
 // TODO: make the hyperlink appear
 function append_achiever2(resp){ //should take in a response 
+    // can't use url_for in js
+    var usrURL = "/searched-profile/" + resp.username + "/"
     var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">' + resp.first + 
-    '</td> <td class ="last">' + resp.last + '</td> <td class ="username">' + 
-    resp.username + '</td> <td class ="count">' + resp.count + '</td></tr>';
+    '</td> <td class ="last">' + resp.last + 
+    '</td> <td class ="username"><a href="' + usrURL + '" >' + 
+    resp.username + '</a></td> <td class ="count">' + resp.count + '</td></tr>';
     $("#achievers").append(rowitem);
     $("#completed").text("Congrats! You've completed this achievement!");
+    document.getElementById("hideshow").style.display = "block";
     console.log("sucess!");
 }
 

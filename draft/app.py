@@ -117,8 +117,6 @@ def users(userSearch):
     if request.method == 'POST':
         a = []
         if(userSearch != ""):
-            print("RIGHT HERE")
-            print(userSearch)
             a = databaseAccess.getUsers(conn,userSearch)
 
     #if the user is just loading the page, show them nothing
@@ -242,10 +240,19 @@ def searchedProfile(user):
     #need for if the user selects their profile tab
     userID = session.get('uID')
 
+    #username of the logged in user
+    username = ""
+
+    if userID != None:
+        username = databaseAccess.getUser(conn, userID)["username"]
+
     #this is the searched for information
     searchedInfo = databaseAccess.getUserByUsername(conn, user)
     nameTitle = searchedInfo['first_Name'] + " " + searchedInfo['last_Name']
     searchedID = searchedInfo['UID']
+
+    print("HERE!!")
+    print(searchedInfo)
 
     #achievements of the seached user that we want to look at
     allComps = databaseAccess.getCompAchievements(conn, searchedID)
@@ -267,7 +274,8 @@ def searchedProfile(user):
                                                    isLoggedIn = (True if userID!=None else False),
                                                    emissions = emissions,
                                                    compAchis = allComps,
-                                                   starAchis = allStars)
+                                                   starAchis = allStars,
+                                                   userURL=username)
 
 
 '''route to display information for a given achievement and allows the user 
@@ -275,21 +283,26 @@ to mark as completed if logged in '''
 @app.route('/achievement/<AID>/', methods= ['POST', 'GET'])
 def achieveinfo(AID):
     conn = databaseAccess.getConn(currDB)
-    #get information
+    #--accessing current user information
     #if the user is logged in then allow to self report
-    userID = None
     user_info = None
     completed_info = None
     completed = False
     count = None
-    if (session.get('uID') != None):
-        userID = session.get('uID')
+    userID = session.get('uID') # will be none if not logged in
+    username = ""
+
+    if userID != None:
+        username = databaseAccess.getUser(conn, userID)["username"]
         user_info = databaseAccess.getUser(conn, userID)
         #check if the user has already completed this achievement
         completed_info = databaseAccess.getUserCompletedAchiev(conn, userID, AID)
-        if(completed_info != None):
+        if completed_info != None :
             completed = True
-            count = completed_info["count"]
+            count = completed_info["count"] 
+    #else:
+        #not logged in
+    #--end of accessing current user information
 
     achieve_info = databaseAccess.getAchieveInfo(conn, AID)
     #returns the UID, first name, last name of users who completed
@@ -302,7 +315,8 @@ def achieveinfo(AID):
                                                user_info = user_info,
                                                completed = completed,
                                                count = count,
-                                               isLoggedIn = (True if userID!=None else False))
+                                               isLoggedIn = (True if userID!=None else False),
+                                               userURL=username)
 
 '''route to update the database when the user clicked "yes" under completed 
 to mark as completed if logged in '''

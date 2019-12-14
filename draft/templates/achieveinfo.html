@@ -29,10 +29,15 @@
 
 <!-- Display all the people who have completed this achievement-->
 {% if users |length != 0: %}
+    <h2 id = "users_list">Users who have reached this achievement!</h2> 
+    <div id="hideshow" class="visible">
+{% else %}
+    <h2 id = "no_users_yet">Be the first to reach this achievement!</h2>
+    <div id="hideshow" class="tempinvisible">
+{% endif %}
+<!-- if else, so there's only one div with id "hideshow" at a time -->
 
-<h2 id = "users_list">Users who have reached this achievement!</h2> 
-
-<table id= "achievers"> 
+<table id= "achievers">
     <tr>
         <th>First Name</th>
         <th>Last Name</th>
@@ -44,19 +49,14 @@
     <tr data-id = "{{user['AID']}}"> 
         <td><span class="first">{{user['first_Name']}}</span></td>
         <td class="last">{{user['last_Name']}}</td>
-        <td class="username"><a href="{{url_for('profile', username=user['username'])}}">{{user['username']}}</a></td>
+        <td class="username"><a href="{{url_for('searchedProfile', user=user['username'])}}">{{user['username']}}</a></td>
         <td class="count">{{user['count']}}</td>
     </tr>
     {% endfor %}
 
 </table>
-
-{% else %}
-
-<h2 id = "no_users_yet">Be the first to reach this achievement!</h2>
-
-{% endif %}
-
+</div> <!-- end of tempinvisible or visible div -->
+<!-- depends on if users have completed this achievement previously -->
 
 {% endblock %}
 

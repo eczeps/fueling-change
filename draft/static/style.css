@@ -140,6 +140,15 @@ li a:hover:not(.active) {
     text-align: center;
 }
 
+/* showing and hiding divs dynamically */
+.tempinvisible {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
 /* For the table */
 table {
     margin-left:auto; 
