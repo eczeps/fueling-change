@@ -1,4 +1,4 @@
-// $(".reset-button").click(reset(aid))
+$(".reset-button").click(call_reset)
 
 $(".report-button").click(add_achieve);
 
@@ -22,6 +22,11 @@ function add_achieve(event){
          reset(AID);
         //  clicked = false;
     }
+}
+
+function call_reset(event){
+    var AID =  $(this).attr('data-tt'); 
+    reset(AID);
 }
 
 function append_achiever(AID, first, last, username, count){ //should take in a response 

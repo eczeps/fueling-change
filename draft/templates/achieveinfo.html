@@ -9,12 +9,8 @@
     <!-- <p>{{user}}</p> -->
     {% if completed: %}
     <p id = "completed">Congrats! You've completed this achievement!</p>>
-    <!-- <button data-tt="{{achieveID}}" class="reset-button">reset</button> -->
-    <form id = "reset" class="button" method=POST action="{{url_for('resetAchieve')}}">
-        <input type= "hidden" name="aid" value="{{achieveID}}">
-        <button name="submit">reset</button>
-    </form>
-
+    <button data-tt="{{achieveID}}" class="reset-button">reset</button>
+    
     <!-- add a form here to collect the user's data -->
     <form id = "self-report" method=POST action="{{url_for('updateRepeatedAchiev')}}">
         <input type="number" name="new_count" placeholder="{{count}}">

@@ -349,14 +349,13 @@ def resetAchieveAjax():
     print("returns from database")
     return jsonify({"reload": "true"})
 
-@app.route('/resetAchieve/', methods = ['POST'])
-def resetAchieve():
-    conn = databaseAccess.getConn(currDB)
-    userID = session.get('uID')
-    aid = request.form['aid']
-    databaseAccess.deleteCompletedAchiev(conn, userID, aid)
-    return redirect(url_for('achieveinfo', AID = aid))
-
+# @app.route('/resetAchieve/', methods = ['POST'])
+# def resetAchieve():
+#     conn = databaseAccess.getConn(currDB)
+#     userID = session.get('uID')
+#     aid = request.form['aid']
+#     databaseAccess.deleteCompletedAchiev(conn, userID, aid)
+#     return redirect(url_for('achieveinfo', AID = aid))
 
 @app.route('/login/', methods=['GET'])
 def login():
