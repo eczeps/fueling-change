@@ -286,7 +286,7 @@ def achieveinfo(AID):
         userID = session.get('uID')
         user_info = databaseAccess.getUser(conn, userID)
         #check if the user has already completed this achievement
-        completed_info = databaseAccess.getUserCompletedthisAchiev(conn, userID, AID)
+        completed_info = databaseAccess.getUserCompletedAchiev(conn, userID, AID)
         if(completed_info != None):
             completed = True
             count = completed_info["count"]
@@ -331,13 +331,30 @@ def updateCompleted():
                     'count': user_info['count'] if hasCount else 1})
 
 
-@app.route('/updateRepeatedAchiev', methods= ['POST'])
+@app.route('/updateRepeatedAchiev/', methods= ['POST'])
 def updateRepeatedAchiev():
     conn = databaseAccess.getConn(currDB)
     userID = session.get('uID')
     aid = request.form["aid"]
     new_count = request.form["new_count"]
     databaseAccess.updateCompletedCount(conn, userID, aid, new_count)
+    return redirect(url_for('achieveinfo', AID = aid))
+
+@app.route('/resetAchieveAjax/', methods = ['POST'])
+def resetAchieveAjax():
+    conn = databaseAccess.getConn(currDB)
+    userID = session.get('uID')
+    aid = request.form['aid']
+    databaseAccess.deleteCompletedAchiev(conn, userID, aid)
+    print("returns from database")
+    return jsonify({"reload": "true"})
+
+@app.route('/resetAchieve/', methods = ['POST'])
+def resetAchieve():
+    conn = databaseAccess.getConn(currDB)
+    userID = session.get('uID')
+    aid = request.form['aid']
+    databaseAccess.deleteCompletedAchiev(conn, userID, aid)
     return redirect(url_for('achieveinfo', AID = aid))
 
 

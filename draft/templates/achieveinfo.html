@@ -9,18 +9,23 @@
     <!-- <p>{{user}}</p> -->
     {% if completed: %}
     <p id = "completed">Congrats! You've completed this achievement!</p>>
-    <button data-tt="{{achieveID}}" class="reset-button">reset</button>
+    <!-- <button data-tt="{{achieveID}}" class="reset-button">reset</button> -->
+    <form id = "reset" class="button" method=POST action="{{url_for('resetAchieve')}}">
+        <input type= "hidden" name="aid" value="{{achieveID}}">
+        <button name="submit">reset</button>
+    </form>
 
     <!-- add a form here to collect the user's data -->
     <form id = "self-report" method=POST action="{{url_for('updateRepeatedAchiev')}}">
         <input type="number" name="new_count" placeholder="{{count}}">
         <input type= "hidden" name="aid" value="{{achieveID}}">
-        <button type="submit" name="submit">Update!</button>
+        <button type="submit" name="submit">Update</button>
     </form>
 
     {% else %}
     <p id = "completed">Did you complete this achievement?</p>>
     <button data-tt="{{achieveID}}" class="report-button">Yes!</button>
+    <!-- right a script here to hide the reset button???????? -->
     {% endif %}
     <p>{{logged_in}}</p>
 {% endif %}
@@ -62,6 +67,7 @@
 {% block JSJQ %}
 <script>
 var URL = "{{url_for('updateCompleted')}}";
+var URL2 = "{{url_for('resetAchieveAjax')}}";
 </script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="{{url_for('static',filename='achievements.js')}}"></script>

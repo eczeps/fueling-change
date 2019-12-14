@@ -1,24 +1,27 @@
+// $(".reset-button").click(reset(aid))
+
 $(".report-button").click(add_achieve);
 
 var clicked = false;
 
 /*
 * @param event
-* changes the text of the button to oops and adds the user to the list of users 
+* changes the text of the button and adds the user to the list of users 
 */
 function add_achieve(event){
     console.log("clicked");
     var AID =  $(this).attr('data-tt'); 
     console.log(AID);
     if (clicked == false){
-        $(this).text("oops");
+        $(this).text("reset");
         clicked = true;
         // append_achiever(1, "meeeee", "GARCIA");
         send_completed(AID);
-    }//else{ //if the oops is clicked then it should send a response to the backend to remove the achievement
-    //     $(this).text("Yes!");
-    //     clicked = false;
-    // }
+    }else{ //if the oops is clicked then it should send a response to the backend to remove the achievement
+         //call the function here for reset
+         reset(AID);
+        //  clicked = false;
+    }
 }
 
 function append_achiever(AID, first, last, username, count){ //should take in a response 
@@ -42,4 +45,10 @@ function send_completed(aid){
     $.post(URL, {'aid': aid}, append_achiever2, 'json');
 }
 
+function reset(aid){
+    $.post(URL2, {'aid': aid}, response, 'json');
+}
 
+function response(resp){
+    location.reload(true);
+}

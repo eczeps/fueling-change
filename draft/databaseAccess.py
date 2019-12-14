@@ -108,7 +108,7 @@ def insertCompleted(conn, uid, aid):
                     [uid, aid])
     return curs.fetchone()
 
-def getUserCompletedthisAchiev(conn, uid, aid):
+def getUserCompletedAchiev(conn, uid, aid):
     '''Returns UID, AID, count, timestamp from completed if the specified user has 
     completed the specified achievement'''
     curs = dbi.dictCursor(conn)
@@ -116,6 +116,12 @@ def getUserCompletedthisAchiev(conn, uid, aid):
                     UID=%s and AID=%s''', [uid, aid])
     return curs.fetchone()
 
+def deleteCompletedAchiev(conn,uid, aid):
+    ''' deletes the entry in the completed table who's primary key is (uid, aid)
+        essentially used to reset'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''delete from completed
+                    where UID = %s and AID = %s''', [uid, aid])
 
 def getCompAchievements(conn, UID):
     '''Returns the AID, title, description, and count of this user's
