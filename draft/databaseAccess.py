@@ -10,8 +10,23 @@ d = "atinney_db"
 # $ ./testingSetup.sh atinney_db
 
 # ==========================================================
-# The functions that do most of the work.
 
+    # ==== KEY ====
+    # for scroll search purposes. (use find)
+    # (alpha)-(alpha)-(numeral) such as A-B-1
+    # first (alpha) can be A or M
+    #   A stands for Access
+    #   M stands for Modify
+    # second (alpha) can be A, U, or B
+    #   A means function has parameters for achievements only
+    #   U means function has parameters for users only
+    #   B means function has parameters for both.
+    # (numeral) can be any numeric quantity
+    #   purpose of (numeral) is to incrementally count functions
+    #       within a category.
+
+
+# ==== GENERAL PURPOSE ====
 def getConn(db):
     '''Returns a database connection for that db'''
     # dsn = dbi.read_cnf('../../.my.team_cnf') # for group db
@@ -20,6 +35,12 @@ def getConn(db):
     conn.select_db(db)
     return conn
 
+def prettyRound(number):
+    return math.floor(round(number,0))
+
+
+# ==== ACCESS INFORMATION BASED ON ACHIEVEMENTS ====
+# A-A-1
 def getAchieveInfo(conn, AID):
     '''Returns the title, description, isRepeatable, isSelfReport of given AID'''
     curs = dbi.dictCursor(conn)
@@ -28,30 +49,7 @@ def getAchieveInfo(conn, AID):
                     where AID = %s''', [AID])
     return curs.fetchone()
 
-def getAchievePeople(conn, AID):
-    '''Returns the UID, first_Name, last_Name, username, and count
-    for people who have completed this achievement'''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select UID, first_Name, last_Name, username, count 
-                    from completed inner join user using (UID) 
-                    where AID = %s''', [AID])
-    return curs.fetchall()
-
-def getUsers(conn, searchTerm):
-    '''Returns the UID, first name, last name, and username
-    of all users that have a similar field to the search,
-    as a list of dictionaries.
-    '''
-    curs = dbi.dictCursor(conn)
-    searchTerm = "%" + searchTerm + "%"
-    curs.execute('''select UID, first_Name, last_Name, username
-                    from user
-                    where first_Name like %s
-                    or last_Name like %s
-                    or username like %s''',
-                    [searchTerm,searchTerm,searchTerm])
-    return curs.fetchall()
-
+# A-A-2
 def getAchievements(conn, searchFor):
     '''Returns the AID, title, description, isRepeatable, isSelfReport
     of all achievements that have a similar field to the search,
@@ -68,6 +66,7 @@ def getAchievements(conn, searchFor):
                     [searchFor,searchFor,searchFor,searchFor])
     return curs.fetchall()
 
+# A-A-3
 def getAllAchievements(conn):
     '''Returns the AID, title, description, isRepeatable, isSelfReport 
     of all achievements, as a list of dictionaries.
@@ -77,126 +76,7 @@ def getAllAchievements(conn):
                     from achievement''')
     return curs.fetchall()
 
-def insertCompleted(conn, uid, aid):
-    '''inserts into the completed table 
-    '''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
-                    [uid, aid])
-    return curs.fetchone()
-
-def getUserCompletedAchiev(conn, uid, aid):
-    '''Returns UID, AID, count, timestamp from completed if the specified user has 
-    completed the specified achievement'''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select * from completed where 
-                    UID=%s and AID=%s''', [uid, aid])
-    return curs.fetchone()
-
-def deleteCompletedAchiev(conn,uid, aid):
-    ''' deletes the entry in the completed table who's primary key is (uid, aid)
-        essentially used to reset'''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''delete from completed
-                    where UID = %s and AID = %s''', [uid, aid])
-
-def getCompAchievements(conn, UID):
-    '''Returns the AID, title, description, and count of this user's
-    completed achievements, as a list of dictionaries.
-    '''
-    curs = dbi.dictCursor(conn)
-    #also need to do join for count here
-    curs.execute('''select completed.AID,title,description,count
-                    from completed
-                    join achievement
-                    on achievement.AID=completed.AID
-                    where UID=%s''', [UID])
-    return curs.fetchall()
-
-def getStarredAchieves(conn, UID):
-    '''Returns the AID, title, and description of this user's
-    starred achievements, as a list of dictionaries.
-    '''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select starred.AID,title,description
-                    from starred
-                    join achievement
-                    on achievement.AID=starred.AID
-                    where UID=%s''', [UID])
-    return curs.fetchall()
-
-def checkAutomaticAchieves(conn, UID):
-    '''Adds or removes the user's automatic achievements as we see fit.
-    '''
-    pleaseCheck=[12,14]
-    for i in pleaseCheck:
-        checkOneAutomatic(conn, UID, i)
-
-def checkOneAutomatic(conn, UID, AID):
-    '''Adds or removes a particular automatic achievement.
-    Right now there are only four that we care about
-    '''
-    curs = dbi.dictCursor(conn)
-
-    #WHY? Python doesn't have regular switch statements
-    #gotta use a dictionary or if/elif/else which is so gross :c
-
-    calc = ""
-    fetched = None
-    if AID==12: #Top 10
-        calc = "max(footprint)/10.0"
-        curs.execute('''select exists (select uid,aid,count from completed where uid=%s and aid=%s) as exist''',
-                     [UID, 13])
-        fetched = curs.fetchone()['exist']
-    elif AID==14: #Top 50
-        calc = "avg(footprint)"
-        curs.execute('''select exists (select uid,aid,count from completed where uid=%s and aid=%s) as exist''',
-                     [UID, 15])
-        fetched = curs.fetchone()['exist']
-    
-    print("wasInTop next")
-    wasInTop = True if fetched else False
-    print(wasInTop)
-    prevCount = 0 if not wasInTop else fetched['count']
-    counting = prevCount + 1
-
-    #order is important so need to do this again
-    if AID==12: #Once Upon A Time: Top 10
-        #when need to remove 12, add 1 to 13
-        updateCompletedCount(conn, UID, 13, counting)
-    elif AID==14: #Once Upon A Time: Top 50
-        #when need to remove 14, add 1 to 15
-        updateCompletedCount(conn, UID, 15, counting)
-
-    if AID==12 or AID==14:
-        curs.execute('''select exists 
-                            (select uid, username, footprint 
-                            from user 
-                            where footprint <= (select %s from user) 
-                                  and uid=%s) as exist''', [calc, UID])
-        inTop = True if curs.fetchone()['exist']==1 else False
-
-        if wasInTop and not inTop:
-            #remove 12 or 14 from completed
-            deleteCompletedAchiev(conn, UID, AID)
-        
-        elif inTop:
-            insertCompleted(conn, UID, AID)
-    
-
-
-
-
-    
-    
-
-        
-
-    
-
-        
-    
-
+# A-A-4
 def getIsRepeatable(conn, AID):
     '''Returns whether or not this achievement is eligible
     for repetition. This is a Boolean return.
@@ -212,6 +92,7 @@ def getIsRepeatable(conn, AID):
     else:
         return False
 
+# A-A-5
 def getIsSelfReport(conn, AID):
     '''Returns whether or not this achievement is eligible
     for self report. This is a Boolean return.
@@ -227,17 +108,19 @@ def getIsSelfReport(conn, AID):
     else:
         return False
 
-
-def getReportedAchieves(conn, UID):
-    '''Returns a simple list of AIDs for all completed user achievements
-    that says if the achievement is currently reportable by the user.
-    '''
+# A-A-6
+def getAchievePeople(conn, AID):
+    '''Returns the UID, first_Name, last_Name, username, and count
+    for people who have completed this achievement'''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select AID from completed
-                    where UID=%s''', [UID])
+    curs.execute('''select UID, first_Name, last_Name, username, count 
+                    from completed inner join user using (UID) 
+                    where AID = %s''', [AID])
+    return curs.fetchall()
 
-    return list(map(lambda x: x['AID'], curs.fetchall()))
 
+# ==== ACCESS INFORMATION BASED ON USERS ====
+# A-U-1
 def getUserByUsername(conn, username):
     '''Returns user information, as a dictionary.
     '''
@@ -247,7 +130,8 @@ def getUserByUsername(conn, username):
                     where username=%s''', [username])
     return curs.fetchone()
 
-def getUser(conn, UID):
+# A-U-2
+def getUserInfo(conn, UID):
     '''Returns user information, as a dictionary.
     '''
     curs = dbi.dictCursor(conn)
@@ -256,6 +140,98 @@ def getUser(conn, UID):
                     where UID=%s''', [UID])
     return curs.fetchone()
 
+# A-U-3
+def getUsers(conn, searchTerm): 
+    '''Returns the UID, first name, last name, and username
+    of all users that have a similar field to the search,
+    as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    searchTerm = "%" + searchTerm + "%"
+    curs.execute('''select UID, first_Name, last_Name, username
+                    from user
+                    where first_Name like %s
+                    or last_Name like %s
+                    or username like %s''',
+                    [searchTerm,searchTerm,searchTerm])
+    return curs.fetchall()
+
+# A-U-4
+def getCompAchieves(conn, UID):
+    '''Returns the AID, title, description, and count of this user's
+    completed achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    #also need to do join for count here
+    curs.execute('''select completed.AID,title,description,count
+                    from completed
+                    join achievement
+                    on achievement.AID=completed.AID
+                    where UID=%s''', [UID])
+    return curs.fetchall()
+
+# A-U-5
+def getStarAchieves(conn, UID):
+    '''Returns the AID, title, and description of this user's
+    starred achievements, as a list of dictionaries.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select starred.AID,title,description
+                    from starred
+                    join achievement
+                    on achievement.AID=starred.AID
+                    where UID=%s''', [UID])
+    return curs.fetchall()
+
+# A-U-6
+def doesUserHaveCarbonData(conn, UID):
+    curs = dbi.dictCursor(conn)
+    curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
+    return curs.fetchone()['has_carbon_data']
+
+# A-U-7
+def getUserFootprint(conn, UID):
+    '''given a user's UID, gets their current footprint data
+    when we don't need to recalculate it'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select uid, footprint from user where uid=%s''', [UID])
+    return curs.fetchone()['footprint']
+
+# A-U-8
+def getUIDOnLogin(conn, username):
+    #returns the user ID of the user with this username and password, or
+    #return -1 if it's an invalid username/password combo
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select UID,password from user 
+                    where username = %s ''',
+                    [username])
+    result = curs.fetchone()
+    if result:
+        return result
+    else:
+        return -1
+
+# A-U-9
+#TODO: delete this once logins & signups are working
+def getSaltByUsername(conn, username):
+    #returns the salt associated with the given username
+    #this is called when someone is logging in and we're checking their password
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select salt from user where username = %s''', [username])
+    return curs.fetchone()
+
+
+# ==== ACCESS INFORMATION BASED ON USERS AND ACHIEVEMENTS ====
+# A-B-1
+def getUserCompletedAchiev(conn, uid, aid):
+    '''Returns UID, AID, count, timestamp from completed if the specified user has 
+    completed the specified achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select * from completed where 
+                    UID=%s and AID=%s''', [uid, aid])
+    return curs.fetchone()
+
+# A-B-2
 def getUserForAchievement(conn, UID, AID):
     '''Returns the first_Name, last_Name, username, and count
     for the specified user who has completed this achievement'''
@@ -273,6 +249,9 @@ def getUserForAchievement(conn, UID, AID):
 
     return (res, hasCount)
 
+
+# ==== MODIFY DATABASE BASED ON USERS ====
+# M-U-1
 def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                     cheese, pork, turkey, chicken, laundry):
     '''Updates the carbon footprint info for a given user 
@@ -294,29 +273,12 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                     where UID=%s''', [flights, driving, \
                     lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
 
-def updateCompletedCount(conn, UID, AID, count):
-    ''' updates the count of the specific person and achievement to be count'''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''update completed set count = %s 
-                    where UID = %s and AID = %s ''', 
-                        [count, UID, AID])
-
-def doesUserHaveCarbonData(conn, UID):
-    curs = dbi.dictCursor(conn)
-    curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
-    return curs.fetchone()['has_carbon_data']
-
-def getUserFootprint(conn, UID):
-    '''given a user's UID, gets their current footprint data
-    when we don't need to recalculate it'''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select uid, footprint from user where uid=%s''', [UID])
-    return curs.fetchone()['footprint']
-
-def calculateUserFootprint(conn, UID):
+# M-U-2
+def calculateUserFootprint(conn, UID, p=False):
     '''given a user's UID, get their info from the database and uses the
     carbon footprint calculator (calculator.py) to calculate and return 
-    a total footprint'''
+    a total footprint
+    optional argument is for printing purposes'''
     #TODO: this works but the numbers seem to be slightly off. look into this more
     curs = dbi.dictCursor(conn)
     curs.execute(''' select 
@@ -332,7 +294,8 @@ def calculateUserFootprint(conn, UID):
                     from user where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
-    print('userData in databaseaccess: ' + str(userData))
+    if p:
+        print('++ userData in databaseaccess: ' + str(userData))
     total = calculator.plane_emissions(userData['miles_flown']) \
             + calculator.car_emissions(userData['miles_driven']) \
             + calculator.meat_emissions(userData['servings_lamb'], \
@@ -349,21 +312,7 @@ def calculateUserFootprint(conn, UID):
     
     return total
 
-
-def getUIDOnLogin(conn, username):
-    #returns the user ID of the user with this username and password, or
-    #return -1 if it's an invalid username/password combo
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select UID,password from user 
-                    where username = %s ''',
-                    [username])
-    result = curs.fetchone()
-    if result:
-        return result
-    else:
-        return -1
-
-
+# M-U-3
 def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #puts the username, hashed password, salt, in the database
     #returns the uid the database created for this user
@@ -378,22 +327,37 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
                     [username, hashed_password])
     return curs.fetchone()
 
-#TODO: delete this once logins & signups are working
-def getSaltByUsername(conn, username):
-    #returns the salt associated with the given username
-    #this is called when someone is logging in and we're checking their password
+
+# ==== MODIFY DATABASE BASED ON USERS AND ACHIEVEMENTS ====
+# M-B-1
+def insertCompleted(conn, uid, aid):
+    '''inserts into the completed table 
+    '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select salt from user where username = %s''', [username])
+    curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
+                    [uid, aid])
     return curs.fetchone()
 
+# M-B-2
+def deleteCompletedAchiev(conn, uid, aid):
+    ''' deletes the entry in the completed table who's primary key is (uid, aid)
+        essentially used to reset'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''delete from completed
+                    where UID = %s and AID = %s''', [uid, aid])
 
-def prettyRound(number):
-    return math.floor(round(number,0))
+# M-B-3
+def updateCompletedCount(conn, UID, AID, count):
+    ''' updates the count of the specific person and achievement to be count'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''update completed set count = %s 
+                    where UID = %s and AID = %s ''', 
+                        [count, UID, AID])
 
 # ==========================================================
 # This starts the ball rolling, *if* the file is run as a
 # script, rather than just being imported.    
 
 if __name__ == '__main__':
-    print("Should not run this from the command line.")
+    print("*** WARNING: Should not run databaseAccess.py from the command line. ***")
         

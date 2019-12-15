@@ -6,7 +6,8 @@ app = Flask(__name__)
 
 import bcrypt
 import sys,os,random,math
-import databaseAccess
+import databaseAccess as dba
+import automatics as atm
 
 #TODO: (ELLIE) emissions don't update to the database after calculations
 #TODO: (ELLIE) Figure out team database
@@ -17,7 +18,7 @@ import databaseAccess
 #TODO: (ELLIE) make a powerpoint/outline for the presentation
 #TODO: (ESTRELLA) submit a request for a team shell account, and email him when you do it
 
-currDB = databaseAccess.d
+currDB = dba.d
 # currUser = 1
 # realistically, this will be an actual user's ID
 # for now we will just set it to 1 until we implement sessions & logging in
@@ -38,15 +39,15 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 '''handles the homepage route, and handles both when users are logged in and when they aren't'''
 @app.route('/')
 def index():
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #--accessing current user information
     #userID will either be the user's number or None if they're not logged in
     userID = session.get('uID')
-    print('userID in index route: ' + str(userID))
+    print('++ userID in index route: ' + str(userID))
 
     username = ""
     if userID != None:
-        username = databaseAccess.getUser(conn, userID)['username']
+        username = dba.getUserInfo(conn, userID)['username']
     #else:
         #not logged in profile won't show so we don't need to worry about
         #username being empty
@@ -61,7 +62,7 @@ def index():
 @app.route('/achievements/', methods = ['POST', 'GET'], defaults={'searchFor': ""})
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #--accessing current user information
     userID = session.get('uID')
     # stars is short for starred achievements
@@ -69,8 +70,8 @@ def achievement(searchFor):
 
     username = ""
     if userID != None:
-        username = databaseAccess.getUser(conn, userID)["username"]
-        stars = databaseAccess.getStarredAchieves(conn, userID) 
+        username = dba.getUserInfo(conn, userID)["username"]
+        stars = dba.getStarAchieves(conn, userID) 
     #else:
         #not logged in
     #--end of accessing current user information
@@ -80,14 +81,14 @@ def achievement(searchFor):
     if request.method == 'POST':
         a = []
         if(searchFor==""):
-            a = databaseAccess.getAllAchievements(conn)
+            a = dba.getAllAchievements(conn)
         else:
-            a = databaseAccess.getAchievements(conn,searchFor)
+            a = dba.getAchievements(conn,searchFor)
 
     #if the user is just loading the page, show them all the achievements
     elif request.method == 'GET':
         searchFor = ''
-        a = databaseAccess.getAllAchievements(conn)
+        a = dba.getAllAchievements(conn)
 
 
     return render_template('achievementSearch.html',title=searchFor,
@@ -101,7 +102,7 @@ def achievement(searchFor):
 @app.route('/users/', methods = ['POST', 'GET'], defaults={'userSearch': ""})
 @app.route('/users/<userSearch>', methods = ['POST', 'GET'])
 def users(userSearch):
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #find the users that have a matching search term in their
     #first, last, or username
     #if the user is searching for something, access the database to get search results
@@ -110,12 +111,12 @@ def users(userSearch):
 
     username=""
     if userID != None:
-        username=databaseAccess.getUser(conn, userID)['username']
+        username=dba.getUserInfo(conn, userID)['username']
 
     if request.method == 'POST':
         a = []
         if(userSearch != ""):
-            a = databaseAccess.getUsers(conn,userSearch)
+            a = dba.getUsers(conn,userSearch)
 
     #if the user is just loading the page, show them nothing
     elif request.method == 'GET':
@@ -138,13 +139,13 @@ def profile(username):
     #get user information
     #TODO: we really shouldn't be getting userInfo if current_uID is None. More generally,
     #we need to decide how to handle loading this page if the user is not logged in (and therefore current_uID is None)
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #TODO: see hwk6 to handle when user is an empty string (see movies route)
     
     if (userID!=None):
         #TODO: (ELLIE) add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
-        userInfo = databaseAccess.getUser(conn, userID)
+        userInfo = dba.getUserInfo(conn, userID)
 
         #variables for formatting template
         titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
@@ -154,16 +155,15 @@ def profile(username):
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
 
         #get achievements
-        allComps = databaseAccess.getCompAchievements(conn, userID)
-        allStars = databaseAccess.getStarredAchieves(conn, userID)
+        allComps = dba.getCompAchieves(conn, userID)
+        allStars = dba.getStarAchieves(conn, userID)
 
         #calculate emissions
-        has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, userID)
-        print('has_carbon_data in profile route: ' + str(has_carbon_data))
+        has_carbon_data = dba.doesUserHaveCarbonData(conn, userID)
+        print('++ has_carbon_data in profile route: ' + str(has_carbon_data))
         if has_carbon_data:
-            print('has carbon data!!')
-            emissionsRAW = databaseAccess.calculateUserFootprint(conn, userID)
-            emissions = databaseAccess.prettyRound(emissionsRAW)
+            emissionsRAW = dba.calculateUserFootprint(conn, userID)
+            emissions = dba.prettyRound(emissionsRAW)
         else:
             #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
             #fix this by forcing them to fill out data on sign up or on login until they do it.
@@ -187,9 +187,9 @@ def profile(username):
 def reportData(user):
     UID = session.get('uID') #format was first-lastname-UID
     #get information
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering
-    databaseAccess.updateUserInfo(conn, UID, 
+    dba.updateUserInfo(conn, UID, 
                                     request.form.get('flights'), 
                                     request.form['drives'], 
                                     request.form['lamb'], 
@@ -199,7 +199,7 @@ def reportData(user):
                                     request.form['turkey'], 
                                     request.form['chicken'], 
                                     request.form['laundry'])
-    return(redirect('/useraction/' + user + '/'))
+    return(redirect(url_for('profile', user=user)))
 
 
 '''route to handle actions users can take from their profile, including:
@@ -221,8 +221,8 @@ def useract(user):
     UID = session.get('uID')
 
     #get information
-    conn = databaseAccess.getConn(currDB)
-    userInfo = databaseAccess.getUser(conn, UID)
+    conn = dba.getConn(currDB)
+    userInfo = dba.getUserInfo(conn, UID)
 
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
@@ -236,7 +236,7 @@ def useract(user):
 to mark as completed if logged in '''
 @app.route('/searched-profile/<user>/', methods= ['POST', 'GET'])
 def searchedProfile(user):
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #need for if the user selects their profile tab
     userID = session.get('uID')
 
@@ -244,34 +244,30 @@ def searchedProfile(user):
     username = ""
 
     if userID != None:
-        username = databaseAccess.getUser(conn, userID)["username"]
+        username = dba.getUserInfo(conn, userID)["username"]
 
     #this is the searched for information
-    searchedInfo = databaseAccess.getUserByUsername(conn, user)
+    searchedInfo = dba.getUserByUsername(conn, user)
     nameTitle = searchedInfo['first_Name'] + " " + searchedInfo['last_Name']
     searchedID = searchedInfo['UID']
 
-    print("HERE!!")
-    print(searchedInfo)
-
     #achievements of the seached user that we want to look at
-    allComps = databaseAccess.getCompAchievements(conn, searchedID)
-    allStars = databaseAccess.getStarredAchieves(conn, searchedID)
+    allComps = dba.getCompAchieves(conn, searchedID)
+    allStars = dba.getStarAchieves(conn, searchedID)
 
     #calculate emissions of the searched user
-    has_carbon_data = databaseAccess.doesUserHaveCarbonData(conn, searchedID)
-    # print('has_carbon_data in profile route: ' + str(has_carbon_data))
+    has_carbon_data = dba.doesUserHaveCarbonData(conn, searchedID)
+    print('++ has_carbon_data in searched-profile route: ' + str(has_carbon_data))
     if has_carbon_data:
-        print('has carbon data!!')
-        emissionsRAW = databaseAccess.calculateUserFootprint(conn, searchedID)
-        emissions = databaseAccess.prettyRound(emissionsRAW)
+        emissionsRAW = dba.calculateUserFootprint(conn, searchedID)
+        emissions = dba.prettyRound(emissionsRAW)
     else:
-        emissions = databaseAccess.getUserFootprint(conn, searchedID)
+        emissions = dba.getUserFootprint(conn, searchedID)
 
     return render_template('searchedProfile.html', title = nameTitle,
                                                    thisUser = userID, #in nav bar
                                                    isLoggedIn = (True if userID!=None else False),
-                                                   emissions = emissions,
+                                                   emissions = format(emissions, ','),
                                                    compAchis = allComps,
                                                    starAchis = allStars,
                                                    userURL=username)
@@ -281,7 +277,7 @@ def searchedProfile(user):
 to mark as completed if logged in '''
 @app.route('/achievement/<AID>/', methods= ['POST', 'GET'])
 def achieveinfo(AID):
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     #--accessing current user information
     #if the user is logged in then allow to self report
     user_info = None
@@ -292,10 +288,10 @@ def achieveinfo(AID):
     username = ""
 
     if userID != None:
-        username = databaseAccess.getUser(conn, userID)["username"]
-        user_info = databaseAccess.getUser(conn, userID)
+        username = dba.getUserInfo(conn, userID)["username"]
+        user_info = dba.getUserInfo(conn, userID)
         #check if the user has already completed this achievement
-        completed_info = databaseAccess.getUserCompletedAchiev(conn, userID, AID)
+        completed_info = dba.getUserCompletedAchiev(conn, userID, AID)
         if completed_info != None :
             completed = True
             count = completed_info["count"] 
@@ -303,9 +299,9 @@ def achieveinfo(AID):
         #not logged in
     #--end of accessing current user information
 
-    achieve_info = databaseAccess.getAchieveInfo(conn, AID)
+    achieve_info = dba.getAchieveInfo(conn, AID)
     #returns the UID, first name, last name of users who completed
-    users = databaseAccess.getAchievePeople(conn, AID)
+    users = dba.getAchievePeople(conn, AID)
 
     return render_template('achieveinfo.html', achieveID = AID, 
                                                info = achieve_info,
@@ -321,22 +317,18 @@ def achieveinfo(AID):
 to mark as completed if logged in '''
 @app.route('/updateCompleted/', methods= ['POST'])
 def updateCompleted():
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     aid = request.form['aid'] #gets the achievement ID to update 
-    print("achieve id" + aid) 
     #don't need to check if logged in because they need to be logged in to click on the yes button
     userID = session.get('uID')
-    print(userID)
 
     #update the backend
-    databaseAccess.insertCompleted(conn, userID, aid)
+    dba.insertCompleted(conn, userID, aid)
     
-    grabData = databaseAccess.getUserForAchievement(conn, userID, aid)
+    grabData = dba.getUserForAchievement(conn, userID, aid)
     user_info = grabData[0]
     hasCount = grabData[1]
-    print(user_info)
-
-    print("HERE")
+    
     return jsonify({'UID': userID,
                     'first': user_info['first_Name'],
                     'last': user_info['last_Name'],
@@ -346,28 +338,27 @@ def updateCompleted():
 
 @app.route('/updateRepeatedAchiev/', methods= ['POST'])
 def updateRepeatedAchiev():
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     userID = session.get('uID')
     aid = request.form["aid"]
     new_count = request.form["new_count"]
-    databaseAccess.updateCompletedCount(conn, userID, aid, new_count)
+    dba.updateCompletedCount(conn, userID, aid, new_count)
     return redirect(url_for('achieveinfo', AID = aid))
 
 @app.route('/resetAchieveAjax/', methods = ['POST'])
 def resetAchieveAjax():
-    conn = databaseAccess.getConn(currDB)
+    conn = dba.getConn(currDB)
     userID = session.get('uID')
     aid = request.form['aid']
-    databaseAccess.deleteCompletedAchiev(conn, userID, aid)
-    print("returns from database")
+    dba.deleteCompletedAchiev(conn, userID, aid)
     return jsonify({"reload": "true"})
 
 # @app.route('/resetAchieve/', methods = ['POST'])
 # def resetAchieve():
-#     conn = databaseAccess.getConn(currDB)
+#     conn = dba.getConn(currDB)
 #     userID = session.get('uID')
 #     aid = request.form['aid']
-#     databaseAccess.deleteCompletedAchiev(conn, userID, aid)
+#     dba.deleteCompletedAchiev(conn, userID, aid)
 #     return redirect(url_for('achieveinfo', AID = aid))
 
 @app.route('/login/', methods=['GET'])
@@ -395,50 +386,43 @@ def setUID():
     try:
         username = request.form.get('username')
         password = request.form.get('password')
-        conn = databaseAccess.getConn(currDB)
+        conn = dba.getConn(currDB)
         #userID will either be the user's ID or -1 if it was an invalid username/password combo. this also returns the hashed password
-        row = databaseAccess.getUIDOnLogin(conn, username)
-        print(str(row))
+        row = dba.getUIDOnLogin(conn, username)
         userID = row['UID']
         hashed_password = row['password']
-        print('got all necessary data in login')
+        print('++ got all necessary data in login')
         if userID == -1:
-            print('database didnt think your username was legit')
+            print("++ the database didn't think your username was legit")
             flash("login incorrect. Try again or join")
             return redirect(url_for('index'))
         else:
             hashed2 = bcrypt.hashpw(password.encode('utf-8'),hashed_password.encode('utf-8'))
             hashed2_str = hashed2.decode('utf-8')
-            print('hashed_password: ' + hashed_password)
-            print('hashed2_str: ' + hashed2_str)
+
             if hashed2_str == hashed_password:
                 #log in success!
-                print('your password was right! logging you in')
+                print('++ your password was right! logging you in')
                 flash('successfully logged in as '+username)
                 session['uID'] = userID
 
                 currentUser = session.get('uID')
-                print("uID:")
-                print(currentUser)
+                print("++ uID:", currentUser)
 
                 #check achievements that we need to check for the user
-                #databaseAccess.checkAutomaticAchieves(conn, currentUser)
-                #TODO: (ALISSA) resolve the issue: (1242, 'Subquery returns more than 1 row')
-
+                atm.updateAutomaticAchieves(conn)
 
                 #redirect!
-                username=databaseAccess.getUser(conn, currentUser)['username']
+                username=dba.getUserInfo(conn, currentUser)['username']
                 return redirect(url_for('profile', username=username))
             else:
-                print('your password was prob wrong')
+                print('++ your password was probably wrong')
                 flash('login incorrect. Try again or join')
                 return redirect(url_for('login'))
     except Exception as err:
-        print('error in login: ' + str(err))
+        print('*** ERROR (login): ' + str(err) + ' ***')
         flash('form submission error '+ str(err))
         return redirect( url_for('login') )
-
-
 
 @app.route('/signup/', methods=["GET", "POST"])
 def signup():
@@ -452,7 +436,7 @@ def signup():
             passwd1 = request.form['password1']
             passwd2 = request.form['password2']
             if passwd1 != passwd2:
-                print('passwords do not match')
+                print('++ passwords do not match')
                 flash('passwords do not match')
                 return redirect(url_for('signup'))
             #hash the password the user provided
@@ -463,28 +447,28 @@ def signup():
             #post also takes the first and last name for database and URL purposes
             fName = request.form.get('firstName')
             lName = request.form.get('lastName')
-            conn = databaseAccess.getConn(currDB)
-            uID = databaseAccess.setUIDOnSignup(conn, username, hashed_str, fName, lName)['UID']
+            conn = dba.getConn(currDB)
+            uID = dba.setUIDOnSignup(conn, username, hashed_str, fName, lName)['UID']
             #if this is a dictionary make it a string
-            print('uID after signup: ' + str(uID))
+            print('++ uID after signup: ' + str(uID))
             if uID != -1:
-                print('logging you in! after signup')
+                print('++ logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
 
                 #add them to the joined fueling-change achievement
-                databaseAccess.insertCompleted(conn, session.get('uID'), 1)
+                dba.insertCompleted(conn, session.get('uID'), 1)
                 
-                username = username=databaseAccess.getUser(conn, session.get('uID'))['username']
+                username = username=dba.getUserInfo(conn, session.get('uID'))['username']
                 return redirect(url_for('profile', username=username))
             else:
-                print('username already taken on signup')
+                print('++ username already taken on signup')
                 session['uID'] = None
                 flash("that username is already taken! try again")
                 return redirect(url_for('signup'))
             
         except Exception as e:
-            print('form submission error in signup: ' + str(e))
+            print('*** ERROR (Signup): ' + str(e) + ' ***')
             flash("form submission error :( try again!")
             return redirect( url_for('login'))
     

@@ -43,7 +43,7 @@ do
       echo "~~~ Successfully added achievements to achievement table!"
       echo "~~~ Successfully created $choice users!"
       echo "~~~ \"Joined Fueling Change!\" achievement has been added to all users."
-      echo "~~~ Selected achievements have been added to user1 and user2."
+      echo "~~~ Selected achievements have been added to users with uid 1 and 2."
       exit
     else
       mysql < makeAchieves.sql $1

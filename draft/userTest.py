@@ -15,7 +15,6 @@ if __name__ == '__main__':
     for i in range(1,howMany):
         uName = "user" + str(randint(0,1000))
         footP = i * 206 #this is about 1000 when the only thing there is for driving
-        print("footP:", footP)
         pWord="$2b$12$x7Gi0W4r4UkBAJvpWyX65eOWsvMbgTITesVT9e.QfjS33Q7iJonfS"
 
         curs.execute('''insert into user(first_Name,last_Name,username,password)
