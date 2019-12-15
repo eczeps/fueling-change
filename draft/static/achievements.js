@@ -36,7 +36,6 @@ function append_achiever(AID, first, last, username, count){ //should take in a 
     $("#achievers").append(rowitem);
 }
 
-// TODO: make the hyperlink appear
 function append_achiever2(resp){ //should take in a response 
     // can't use url_for in js
     var usrURL = "/searched-profile/" + resp.username + "/"

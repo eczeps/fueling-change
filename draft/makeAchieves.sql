@@ -38,3 +38,8 @@ values ('Top 10','Claim a spot in the top 10 percent of users.');
 insert into achievement(title,description)
 values ('Top 50','Claim a spot in the top 50 percent of users.');
 
+insert into achievement(title,description,isRepeatable)
+values ('Once Upon a Time: Top 10','Has held a spot in the top 10 percent of users.',1);
+
+insert into achievement(title,description,isRepeatable)
+values ('Once Upon a Time: Top 50','Has held a spot in the top 50 percent of users.',1);

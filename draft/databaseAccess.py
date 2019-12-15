@@ -81,29 +81,6 @@ def insertCompleted(conn, uid, aid):
     '''inserts into the completed table 
     '''
     curs = dbi.dictCursor(conn)
-    #still buggy
-
-    #returns 1 if row exists
-    # rowExists=curs.execute('''select exists(select * 
-    #                                 from completed 
-    #                                 where UID=%s and AID=%s)''',
-    #                           [uid, aid])
-    # isRepeatable = getIsRepeatable(conn, aid)
-    # isSelfReport = getIsSelfReport(conn, aid)
-
-    # if rowExists==1:
-    #     if isRepeatable:
-    #         print("if statement")
-    #         currCount = curs.execute('''select count 
-    #                                 from completed 
-    #                                 where UID=%s and AID=%s)''',
-    #                              [uid, aid])
-    #         updatedCount = currCount + 1
-
-    #         curs.execute('''update completed set count=%s where UID=%s and AID=%s''',
-    #                 [updatedCount, uid, aid])
-    # else:
-    #     print("else statement")
     curs.execute('''insert into completed(UID, AID) values(%s,%s)''',
                     [uid, aid])
     return curs.fetchone()
@@ -147,6 +124,50 @@ def getStarredAchieves(conn, UID):
                     on achievement.AID=starred.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
+
+def checkAutomaticAchieves(conn, UID):
+    '''Adds or removes the user's automatic achievements as we see fit.
+    '''
+    pleaseCheck=[12,13,14,15]
+    for i in pleaseCheck:
+        checkOneAutomatic(conn, UID, i)
+
+def checkOneAutomatic(conn, UID, AID):
+    '''Adds or removes a particular automatic achievement.
+    Right now there are only four that we care about
+    '''
+    
+    #WHY? Python doesn't have regular switch statements
+    #gotta use a dictionary which is so weird
+    switcher = {
+        #Top 10
+        12: "January",
+
+        #Once Upon A Time: Top 10
+            #when remove 12, add 1 to 13
+        13: "February",
+
+        #Top 50
+        14: "March",
+
+        #Once Upon A Time: Top 50
+            #when remove 14, add 1 to 15
+        15: "April"
+    }
+
+    slctStatement = "select "
+
+
+
+    
+    
+
+        
+
+    
+
+        
+    
 
 def getIsRepeatable(conn, AID):
     '''Returns whether or not this achievement is eligible
@@ -334,10 +355,5 @@ def prettyRound(number):
 # script, rather than just being imported.    
 
 if __name__ == '__main__':
-    conn = getConn('wmdb')
-    pl = getPeople(conn)
-    for person in pl:
-        print('{name} born on {date}'
-              .format(name=person['name'],
-                      date=person['birthdate']))
+    print("Should not run this from the command line.")
         

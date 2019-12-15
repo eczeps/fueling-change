@@ -413,10 +413,18 @@ def setUID():
             print('hashed_password: ' + hashed_password)
             print('hashed2_str: ' + hashed2_str)
             if hashed2_str == hashed_password:
+                #log in success!
                 print('your password was right! logging you in')
                 flash('successfully logged in as '+username)
                 session['uID'] = userID
-                username=databaseAccess.getUser(conn, session.get('uID'))['username']
+
+                currentUser = session.get('uID')
+
+                #check achievements that we need to check for the user
+                databaseAccess.checkAutomaticAchieves(conn, currentUser)
+
+                #redirect!
+                username=databaseAccess.getUser(conn, currentUser)['username']
                 return redirect(url_for('profile', username=username))
             else:
                 print('your password was prob wrong')
@@ -431,6 +439,7 @@ def setUID():
 
 @app.route('/signup/', methods=["GET", "POST"])
 def signup():
+    signupSuccessful=False
     if request.method == "GET":
         #get method renders a page w a form
         return render_template('signup.html')
@@ -459,6 +468,10 @@ def signup():
                 print('logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
+
+                #add them to the joined fueling-change achievement
+                databaseAccess.insertCompleted(conn, session.get('uID'), 1)
+                
                 username = username=databaseAccess.getUser(conn, session.get('uID'))['username']
                 return redirect(url_for('profile', username=username))
             else:
@@ -466,8 +479,7 @@ def signup():
                 session['uID'] = None
                 flash("that username is already taken! try again")
                 return redirect(url_for('signup'))
-            username=databaseAccess.getUser(conn, session.get('uID'))['username']
-            return redirect(url_for('profile', username=username))
+            
         except Exception as e:
             print('form submission error in signup: ' + str(e))
             flash("form submission error :( try again!")
