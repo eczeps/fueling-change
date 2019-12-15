@@ -17,6 +17,9 @@ if __name__ == '__main__':
 
         curs.execute('''insert into user(first_Name,last_Name,username,footprint)
                         values('Jane','Doe',%s,%s)''', [uName,footP])
+        
+        curs.execute('''insert into completed(UID,AID)
+                        values(%s,1)''', [i])
     
 
     

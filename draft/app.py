@@ -8,12 +8,10 @@ import bcrypt
 import sys,os,random,math
 import databaseAccess
 
+#TODO: (ELLIE) emissions don't update to the database after calculations
 #TODO: (ELLIE) Figure out team database
-#TODO: (ELLIE) figure out salts
 #TODO: (ESTRELLA) finish go & completed buttons
-#TODO: (ESTRELLA) fix individual achievement page so the table is always present
 #TODO: (ESTRELLA) make templates more inheritey
-#TODO: (ESTRELLA) create google doc for alpha version
 #TODO: run all the code through WAVE (whoever pushes last)
 #TODO: (ESTRELLA) make sure we always use url_for (even in templates)
 #TODO: (ELLIE) make a powerpoint/outline for the presentation
@@ -143,7 +141,8 @@ def profile(username):
     conn = databaseAccess.getConn(currDB)
     #TODO: see hwk6 to handle when user is an empty string (see movies route)
     
-    if (userID!=None): #TODO: add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
+    if (userID!=None):
+        #TODO: (ELLIE) add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
         #if the user is logged in
         userInfo = databaseAccess.getUser(conn, userID)
 
@@ -167,6 +166,7 @@ def profile(username):
             emissions = databaseAccess.prettyRound(emissionsRAW)
         else:
             #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
+            #fix this by forcing them to fill out data on sign up or on login until they do it.
             emissions = 0
     
         return render_template('profile.html',  title=titleString,
@@ -266,8 +266,8 @@ def searchedProfile(user):
         emissionsRAW = databaseAccess.calculateUserFootprint(conn, searchedID)
         emissions = databaseAccess.prettyRound(emissionsRAW)
     else:
-        #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
-        emissions = 0
+        #getUserFootprint is for alissa's testing of automatic achievement updates
+        emissions = databaseAccess.getUserFootprint(conn, searchedID)
 
     return render_template('searchedProfile.html', title = nameTitle,
                                                    thisUser = userID, #in nav bar

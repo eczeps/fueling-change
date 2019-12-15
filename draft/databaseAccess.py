@@ -278,6 +278,11 @@ def doesUserHaveCarbonData(conn, UID):
     curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
     return curs.fetchone()['has_carbon_data']
 
+def getUserFootprint(conn, UID):
+    '''given a user's UID, gets their current footprint data (used for testing only)'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select uid, footprint from user where uid=%s''', [UID])
+    return curs.fetchone()['footprint']
 
 def calculateUserFootprint(conn, UID):
     '''given a user's UID, get their info from the database and uses the

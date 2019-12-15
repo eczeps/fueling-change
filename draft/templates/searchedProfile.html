@@ -31,6 +31,14 @@
 
         <!-- starred achievements -->
         <h2><u>Starred Achievements</u></h2>
+
+        {% if starAchis|length != 0 %}
+            <div class="visible">
+        {% else %}
+            <p>This user has no starred achievements.</p>
+            <div class="tempinvisible">
+        {% endif %}
+
         <table id="starredAchieves">
             <tr>
                 <th>Title</th>
@@ -45,6 +53,7 @@
             </tr>
             {% endfor %}
         </table>
+        </div> <!-- end of div with class tempinvisible or visible -->
         </div> <!-- end of centerme div -->
     {% endif %}
 {% endblock %}

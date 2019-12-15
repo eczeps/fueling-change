@@ -26,11 +26,13 @@
 
 
 {% block body %}    
-<!--Handles cases where user searched for an achievement and when there was no search term-->
+<!--Handles cases where user searched for a user and when there was no search term-->
     {% if title == "" %}
         <h1>Search for Users Above</h1>
+        <div class="tempinvisible">
     {% else %}
         <h1>Showing Users Matching <i>{{title}}</i>:</h1>
+        <div class="visible">
     {% endif %}
     
     <table id="searchedUsers">
@@ -52,4 +54,5 @@
             {% endfor %}
         {% endif %}
     </table>
+    </div> <!-- ends div with class tempinvisible or visible -->
 {% endblock %}
