@@ -9,9 +9,9 @@ while true
 do
     read -r -p 'This will reset all the databases. Continue? [yN] --> ' choice
     case "$choice" in
-      n|N) echo "Operation aborted."; exit;;
-      y|Y) sed -i 's/d = ".*"/d = "'$1'"/' databaseAccess.py; mysql < database.sql $1; echo "Successfully reset database!"; break;;
-      *) echo "Operation aborted."; exit;;
+      n|N) echo "~~~ Operation aborted."; exit;;
+      y|Y) sed -i 's/d = ".*"/d = "'$1'"/' databaseAccess.py; mysql < database.sql $1; echo "~~~ Successfully reset database!"; break;;
+      *) echo "~~~ Operation aborted."; exit;;
     esac
 done
 
@@ -24,33 +24,32 @@ do
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
-      echo "No users inserted."
+      echo "~~~ Successfully added achievements to achievement table!"
+      echo "~~~ No users inserted."
       exit
     elif [[ "$choice" =~ ^1$ ]]
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
-      echo "Successfully created $choice users!"
+      echo "~~~ Successfully added achievements to achievement table!"
+      echo "~~~ Successfully created $choice users!"
+      echo "~~~ Joined Fueling Change has been added to user1."
       exit
     elif [[ "$choice" =~ ^[1-9]+[0-9]+$ ]]
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       mysql < webpageTest.sql $1
-      echo "Successfully created $choice users!"
-      echo "Selected achievements have been added to user1 and user2."
+      echo "~~~ Successfully added achievements to achievement table!"
+      echo "~~~ Successfully created $choice users!"
+      echo "~~~ \"Joined Fueling Change!\" achievement has been added to all users."
+      echo "~~~ Selected achievements have been added to user1 and user2."
       exit
     else
       mysql < makeAchieves.sql $1
-      echo "You did not give an integer."
-      echo "No users inserted."
+      echo "~~~ WARNING: You did not input an integer."
+      echo "~~~ Successfully added achievements to achievement table!"
+      echo "~~~ No users inserted."
       exit
     fi
 done
-
-
-
-
-if ! [[ "$yournumber" =~ ^[0-9]+$ ]] ; 
- then exec >&2; echo "error: Not a number"; exit 1
-fi
