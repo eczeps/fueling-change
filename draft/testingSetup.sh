@@ -22,14 +22,14 @@ do
     read -r -p 'Please give a number for automatic users. --> ' choice
     if [[ "$choice" =~ ^0+ ]]
     then
-      python testUsers.py $1 $(($choice))
+      python userTest.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       echo "~~~ Successfully added achievements to achievement table!"
       echo "~~~ No users inserted."
       exit
     elif [[ "$choice" =~ ^1$ ]]
     then
-      python testUsers.py $1 $(($choice))
+      python userTest.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       echo "~~~ Successfully added achievements to achievement table!"
       echo "~~~ Successfully created $choice users!"
@@ -37,7 +37,7 @@ do
       exit
     elif [[ "$choice" =~ ^[1-9]+[0-9]+$ ]]
     then
-      python testUsers.py $1 $(($choice))
+      python userTest.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       mysql < webpageTest.sql $1
       echo "~~~ Successfully added achievements to achievement table!"

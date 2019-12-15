@@ -128,7 +128,7 @@ def getStarredAchieves(conn, UID):
 def checkAutomaticAchieves(conn, UID):
     '''Adds or removes the user's automatic achievements as we see fit.
     '''
-    pleaseCheck=[12,13,14,15]
+    pleaseCheck=[12,14]
     for i in pleaseCheck:
         checkOneAutomatic(conn, UID, i)
 
@@ -136,26 +136,54 @@ def checkOneAutomatic(conn, UID, AID):
     '''Adds or removes a particular automatic achievement.
     Right now there are only four that we care about
     '''
-    
+    curs = dbi.dictCursor(conn)
+
     #WHY? Python doesn't have regular switch statements
-    #gotta use a dictionary which is so weird
-    switcher = {
-        #Top 10
-        12: "January",
+    #gotta use a dictionary or if/elif/else which is so gross :c
 
-        #Once Upon A Time: Top 10
-            #when remove 12, add 1 to 13
-        13: "February",
+    calc = ""
+    fetched = None
+    if AID==12: #Top 10
+        calc = "max(footprint)/10.0"
+        curs.execute('''select exists (select uid,aid,count from completed where uid=%s and aid=%s) as exist''',
+                     [UID, 13])
+        fetched = curs.fetchone()['exist']
+    elif AID==14: #Top 50
+        calc = "avg(footprint)"
+        curs.execute('''select exists (select uid,aid,count from completed where uid=%s and aid=%s) as exist''',
+                     [UID, 15])
+        fetched = curs.fetchone()['exist']
+    
+    print("wasInTop next")
+    wasInTop = True if fetched else False
+    print(wasInTop)
+    prevCount = 0 if not wasInTop else fetched['count']
+    counting = prevCount + 1
 
-        #Top 50
-        14: "March",
+    #order is important so need to do this again
+    if AID==12: #Once Upon A Time: Top 10
+        #when need to remove 12, add 1 to 13
+        updateCompletedCount(conn, UID, 13, counting)
+    elif AID==14: #Once Upon A Time: Top 50
+        #when need to remove 14, add 1 to 15
+        updateCompletedCount(conn, UID, 15, counting)
 
-        #Once Upon A Time: Top 50
-            #when remove 14, add 1 to 15
-        15: "April"
-    }
+    if AID==12 or AID==14:
+        curs.execute('''select exists 
+                            (select uid, username, footprint 
+                            from user 
+                            where footprint <= (select %s from user) 
+                                  and uid=%s) as exist''', [calc, UID])
+        inTop = True if curs.fetchone()['exist']==1 else False
 
-    slctStatement = "select "
+        if wasInTop and not inTop:
+            #remove 12 or 14 from completed
+            deleteCompletedAchiev(conn, UID, AID)
+        
+        elif inTop:
+            insertCompleted(conn, UID, AID)
+    
+
 
 
 
@@ -279,7 +307,8 @@ def doesUserHaveCarbonData(conn, UID):
     return curs.fetchone()['has_carbon_data']
 
 def getUserFootprint(conn, UID):
-    '''given a user's UID, gets their current footprint data (used for testing only)'''
+    '''given a user's UID, gets their current footprint data
+    when we don't need to recalculate it'''
     curs = dbi.dictCursor(conn)
     curs.execute('''select uid, footprint from user where uid=%s''', [UID])
     return curs.fetchone()['footprint']
@@ -312,6 +341,12 @@ def calculateUserFootprint(conn, UID):
             userData['servings_chicken']) \
             + calculator.washer_emissions(userData['laundry']) \
             + calculator.dryer_emissions(userData['laundry'])
+    
+    #update footprint in user table
+    curs.execute('''update user set footprint = %s 
+                    where UID = %s''',
+                [total, UID])
+    
     return total
 
 

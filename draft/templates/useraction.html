@@ -85,29 +85,6 @@
         </table>
     </form>
     </div> <!-- end of centerme div -->
-    <!-- list of achievements they haven't done but are self-report -->
-    <!-- prolly need to do a join for this gah! -->
-
-
-    <!-- ############################################### -->
-    {% else %}
-    <!-- (2) THIS IS WHERE THE USER CAN SEARCH FOR OTHER USERS -->
-    <!-- this submission shows a list of linked users that match the search -->
-    <!-- if user doesn't exist, list is empty and flash to tell them this -->
-    <!-- link format: /profile/searchedfirstname-searchedlastname-searchedUID -->
-    
-    <h1>Search Users</h1>
-
-    <!-- they can search again if they want -->
-    <form id="uSearch" method=POST action="/useraction/{{userURL}}/">
-        <input id="searchterm" placeholder="Search" name="searchterm">
-        <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
-    </form>
-
-    <!-- set the searched variable true if people found -->
-    
-    <!-- list of users that the search found -->
-
     {% endif %}
 
 {% endblock %}

@@ -266,7 +266,6 @@ def searchedProfile(user):
         emissionsRAW = databaseAccess.calculateUserFootprint(conn, searchedID)
         emissions = databaseAccess.prettyRound(emissionsRAW)
     else:
-        #getUserFootprint is for alissa's testing of automatic achievement updates
         emissions = databaseAccess.getUserFootprint(conn, searchedID)
 
     return render_template('searchedProfile.html', title = nameTitle,
@@ -419,9 +418,13 @@ def setUID():
                 session['uID'] = userID
 
                 currentUser = session.get('uID')
+                print("uID:")
+                print(currentUser)
 
                 #check achievements that we need to check for the user
-                databaseAccess.checkAutomaticAchieves(conn, currentUser)
+                #databaseAccess.checkAutomaticAchieves(conn, currentUser)
+                #TODO: (ALISSA) resolve the issue: (1242, 'Subquery returns more than 1 row')
+
 
                 #redirect!
                 username=databaseAccess.getUser(conn, currentUser)['username']
