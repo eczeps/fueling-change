@@ -20,19 +20,19 @@ done
 while true
 do
     read -r -p 'Please give a number for automatic users. --> ' choice
-    if [[ "$choice" =~ 0+$ ]]
+    if [[ "$choice" =~ ^0+ ]]
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       echo "No users inserted."
       exit
-    elif [[ "$choice" =~ 1$ ]]
+    elif [[ "$choice" =~ ^1$ ]]
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
       echo "Successfully created $choice users!"
       exit
-    elif [[ "$choice" =~ ^[0-9]+$ ]]
+    elif [[ "$choice" =~ ^[1-9]+[0-9]+$ ]]
     then
       python testUsers.py $1 $(($choice))
       mysql < makeAchieves.sql $1
