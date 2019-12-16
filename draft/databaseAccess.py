@@ -294,6 +294,13 @@ def getUserForAchievement(conn, UID, AID):
 
     return (res, hasCount)
 
+def getUserCompletedAchiev(conn, uid, aid):
+    '''Returns UID, AID, count, timestamp from completed if the specified user has 
+    completed the specified achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select * from completed where 
+                    UID=%s and AID=%s''', [uid, aid])
+    return curs.fetchone()
 
 # ==== MODIFY DATABASE BASED ON USERS ====
 # M-U-1
