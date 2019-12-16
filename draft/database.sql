@@ -4,6 +4,7 @@ drop table if exists completed;
 drop table if exists starred;
 drop table if exists user;
 drop table if exists achievement;
+drop table if exists fact;
 
 /* User table will hold all of the user's information
 Used to calculate the user's carbon footprint, as well as personal info */
@@ -68,3 +69,12 @@ create table starred(
         on update cascade
         on delete cascade
 );
+
+/* table to store our rotating fun facts that'll be randomly
+displayed on the homepage */
+create table fact(
+	id int auto_increment,
+	fact_description varchar(500),
+	source varchar(140),
+	primary key (id)
+)
