@@ -92,10 +92,7 @@ def getIsRepeatable(conn, AID):
     #not checking for null cause if that happens it was our fault
     res = curs.fetchone()
 
-    if res == 1: #in our world, 0 is false and 1 is true
-        return True
-    else:
-        return False
+    return (res == 1) #in our world, 0 is false and 1 is true
 
 # A-A-5
 def getIsSelfReport(conn, AID):
@@ -108,10 +105,7 @@ def getIsSelfReport(conn, AID):
     #not checking for null cause if that happens it was our fault
     res = curs.fetchone()
 
-    if res == 1: #in our world, 0 is false and 1 is true
-        return True
-    else:
-        return False
+    return (res == 1) #in our world, 0 is false and 1 is true
 
 # A-A-6
 def getAchievePeople(conn, AID):
@@ -231,9 +225,9 @@ def getUIDOnLogin(conn, username):
     curs.execute('''select UID,password from user 
                     where username = %s ''',
                     [username])
-    result = curs.fetchone()
-    if result:
-        return result
+    res = curs.fetchone()
+    if res:
+        return res
     else:
         return -1
 
@@ -261,14 +255,6 @@ def checkCorrectUser(conn,username,UID):
 
 # ==== ACCESS INFORMATION BASED ON USERS AND ACHIEVEMENTS ====
 # A-B-1
-# def getUserCompletedAchiev(conn, uid, aid):
-#     '''Returns UID, AID, count, timestamp from completed if the specified user has 
-#     completed the specified achievement'''
-#     curs = dbi.dictCursor(conn)
-#     curs.execute('''select * from completed where 
-#                     UID=%s and AID=%s''', [uid, aid])
-#     return curs.fetchone()
-
 def userAchieveExists(conn, UID, AID, tble="completed"):
     curs = dbi.dictCursor(conn)
     if tble == "completed":
@@ -318,19 +304,26 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
     and for users who are changing old info). 
     Does not return anything.'''
     curs = dbi.dictCursor(conn)
-    curs.execute('''update user 
-                            set miles_flown=%s, 
-                            miles_driven=%s,
-                            servings_lamb=%s,
-                            servings_beef=%s,
-                            servings_cheese=%s,
-                            servings_pork=%s,
-                            servings_turkey=%s,
-                            servings_chicken=%s,
-                            laundry=%s,
-                            has_carbon_data=%s
-                    where UID=%s''', [flights, driving, \
-                    lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
+
+    curs.execute('''delete from carbon where UID=%s''', [UID])
+
+    curs.execute('''insert into carbon(uid,
+                                       miles_flown, 
+                                       miles_driven,
+                                       servings_lamb,
+                                       servings_beef,
+                                       servings_cheese,
+                                       servings_pork,
+                                       servings_turkey,
+                                       servings_chicken,
+                                       laundry)
+                    values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', 
+                    [UID, flights, driving, lamb, beef, cheese, \
+                        pork, turkey, chicken, laundry])
+    
+    curs.execute('''update user
+                            set has_carbon_data=%s
+                    where UID=%s''', [True, UID])
 
 # M-U-2
 def calculateUserFootprint(conn, UID):
@@ -350,7 +343,7 @@ def calculateUserFootprint(conn, UID):
                         servings_turkey,
                         servings_chicken,
                         laundry
-                    from user where UID = %s
+                    from carbon where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
     if debug:
@@ -377,8 +370,9 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #returns the uid the database created for this user
     #TODO: add in checking to make sure usernames are unique!! the logic here relies on this so it HAS to get done!
     curs = dbi.dictCursor(conn)
-    curs.execute('''insert into user (username, password, first_Name, last_Name, has_carbon_data) 
-                    values (%s, %s, %s, %s, false)''',
+    #default for has_carbon_data is false so don't need to specify
+    curs.execute('''insert into user (username, password, first_Name, last_Name) 
+                    values (%s, %s, %s, %s)''',
                     [username, hashed_password, firstName, lastName])
     curs.execute('''select UID from user 
                     where username = %s 

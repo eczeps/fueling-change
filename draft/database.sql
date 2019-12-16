@@ -2,6 +2,7 @@
 -- The database consists of tables: 
 drop table if exists completed;
 drop table if exists starred;
+drop table if exists carbon;
 drop table if exists user;
 drop table if exists achievement;
 drop table if exists fact;
@@ -12,11 +13,20 @@ Create table user(
 	UID int auto_increment,
 	first_Name varchar(30),
 	last_Name varchar(30),
-	footprint float,
 	username varchar(30),
 	password char(60),
-	-- had to condense user and userform since can't have
-	-- userform use UID as a primary key
+	footprint float,
+	has_carbon_data boolean not null DEFAULT false,
+	Primary key (UID)
+);
+
+/* Carbon table will hold all of the user's carbon data
+Used to calculate the user's carbon footprint, as well as personal info */
+Create table carbon(
+	UID int,
+	foreign key (UID) references user(UID)
+        on update cascade
+        on delete cascade,
 	miles_flown int,
 	miles_driven int,
 	servings_lamb int,
@@ -26,7 +36,6 @@ Create table user(
 	servings_turkey int,
 	servings_chicken int,
 	laundry int,
-	has_carbon_data boolean not null DEFAULT false,
 	Primary key (UID)
 );
 

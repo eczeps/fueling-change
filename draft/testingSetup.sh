@@ -19,7 +19,7 @@ mysql < funFactSetup.sql $1
 echo "~~~ Successfully added fun facts to fact table!"
 
 
-#add automatic, unloginable users with incrementing footprints
+#add automatic, users with incrementing footprints
 while true
 do
     read -r -p 'Please give a number for automatic users. --> ' choice
