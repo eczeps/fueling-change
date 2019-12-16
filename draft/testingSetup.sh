@@ -15,6 +15,9 @@ do
     esac
 done
 
+mysql < funFactSetup.sql $1
+echo "~~~ Successfully added fun facts to fact table!"
+
 
 #add automatic, unloginable users with incrementing footprints
 while true
