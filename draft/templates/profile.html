@@ -1,7 +1,4 @@
-{% extends "main.html" %} 
-<!-- 2 different load cases: -->
-<!-- (1) Their account and logged in -->
-<!-- (2) Another account OR their account and not logged in -->
+{% extends "main.html" %}
 
 {% block navigation %}
     <div id="navigation">
@@ -29,7 +26,6 @@
 
 {% block body %}
     {% if request.method == "GET" %}
-        <!-- (1) their own account and logged in -->
         <h1>Hi {{title}}</h1> 
         <p>Your current emissions are {{emissions}} kilograms of carbon dioxide per year</p>
         <p>What would you like to do today?</p>
@@ -43,12 +39,10 @@
             <!-- statistics also includes achievements -->
         </form>
 
-    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-    <!-- (2) Another account OR their account and not logged in -->
+    
     {% else %}
     <h1>Viewing {{title}}'s Achievements</h1>
         <!-- user statistics, percentiles, and footprint -->
-        <!-- footprint here -->
         <p>Emissions: {{emissions}} kilograms of carbon dioxide per year</p>
         
         <!-- use a class="exlong" for whatever the largest element is -->
@@ -57,17 +51,23 @@
         <h2><u>Completed Achievements</u></h2>
         <table class="exlong" id="completedAchieves">
             <tr>
+                <th class="small">Earned</th>
                 <th>Title</th>
-                <th>Description</th>
-                <th>Count</th>
+                <th class="wide">Description</th>
             </tr>
             
             {% for achievement in compAchis %}
             {% set aID = achievement['AID'] %}
             <tr data-tt="{{aID}}">
-                <td class="title">{{achievement['title']}}</td>
+                <td class="count">
+                    {% if achievement['isRepeatable']==1 %}
+                        {{achievement['count']}}
+                    {% else %}
+                        &#x2714;
+                    {% endif %}
+                </td>
+                <td class="title"><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></td>
                 <td class="description">{{achievement['description']}}</td>
-                <td class="count">{{achievement['count']}}</td>
             </tr>
             {% endfor %}
         </table>
@@ -85,13 +85,13 @@
         <table id="starredAchieves">
             <tr>
                 <th>Title</th>
-                <th>Description</th>
+                <th class="wide">Description</th>
             </tr>
             
             {% for achievement in starAchis %}
             {% set aID = achievement['AID'] %}
             <tr data-tt="{{aID}}">
-                <td class="title">{{achievement['title']}}</td>
+                <td class="title"><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></td>
                 <td class="description">{{achievement['description']}}</td>
             </tr>
             {% endfor %}

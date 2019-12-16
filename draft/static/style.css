@@ -36,14 +36,22 @@ form {
     display: inline-block;
     border: 2px solid var(--blue);
     padding: 2ex;
+    margin: 0px;
     border-radius: 2ex;
-    margin-top: 30px;
     width: 250px;
     text-align: center;
 }
 
+.searchform{
+    margin-top: 30px;
+}
+
 .bigform {
     width: 500px;
+}
+
+.medform{
+    width: 300px;
 }
 
 .space {
@@ -160,6 +168,10 @@ th {
     font-size: 110%;
 }
 
+th.wide{
+    width: 400px;
+}
+
 .small {
     width: 100px;
 }
@@ -167,6 +179,11 @@ th {
 th, td {
     text-align: center;
     overflow: hidden;
+}
+
+td.signup {
+    text-align: right;
+    padding-right: 5px;
 }
 
 /* TODO: figure out why this isn't working*/

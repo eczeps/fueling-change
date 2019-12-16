@@ -19,11 +19,8 @@ import automatics as atm
 #TODO: (ESTRELLA) submit a request for a team shell account, and email him when you do it
 
 currDB = dba.d
-# currUser = 1
-# realistically, this will be an actual user's ID
-# for now we will just set it to 1 until we implement sessions & logging in
-# run makeAchieves and then webpageTest for this to work
-# or make None to see the unlogged in pages
+debug = dba.debug
+debugLong = dba.debugLong
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -43,7 +40,9 @@ def index():
     #--accessing current user information
     #userID will either be the user's number or None if they're not logged in
     userID = session.get('uID')
-    print('++ userID in index route: ' + str(userID))
+    
+    if debug:
+        print('++ (app.py) userID in index route: ' + str(userID))
 
     username = ""
     if userID != None:
@@ -63,6 +62,10 @@ def index():
 @app.route('/achievements/<searchFor>', methods = ['POST', 'GET'])
 def achievement(searchFor):
     conn = dba.getConn(currDB)
+
+    #check achievements that we need to check for the user
+    atm.updateAutomaticAchieves(conn)
+
     #--accessing current user information
     userID = session.get('uID')
     # stars is short for starred achievements
@@ -100,28 +103,41 @@ def achievement(searchFor):
 
 '''handles the page where users can search for users'''
 @app.route('/users/', methods = ['POST', 'GET'], defaults={'userSearch': ""})
-@app.route('/users/<userSearch>', methods = ['POST', 'GET'])
+@app.route('/users/<userSearch>/', methods = ['POST', 'GET'])
 def users(userSearch):
     conn = dba.getConn(currDB)
-    #find the users that have a matching search term in their
-    #first, last, or username
-    #if the user is searching for something, access the database to get search results
-    userSearch = request.form.get('searchterm')
-    userID=session.get('uID')
 
+    #update before showing anything
+    #check achievements that we need to check for the user
+    atm.updateAutomaticAchieves(conn)
+
+    #current user information
+    userID=session.get('uID')
     username=""
     if userID != None:
         username=dba.getUserInfo(conn, userID)['username']
 
+    #find the users that have a matching search term in their
+    #first, last, or username
+    userSearch = request.form.get('searchterm')
     if request.method == 'POST':
         a = []
-        if(userSearch != ""):
+        if(userSearch==""):
+            a = dba.getAllUsers(conn)
+            random.shuffle(a)
+        else:
             a = dba.getUsers(conn,userSearch)
+            #don't shuffle for real searches
 
-    #if the user is just loading the page, show them nothing
+    #if the user is just loading the page, show them the leaderboard
     elif request.method == 'GET':
         userSearch = ''
-        a = []
+        a = dba.getAllUsers(conn)
+
+    if debug:
+        print("++ (app.py) a:", a)
+        print("++ (app.py) len(a):", len(a))
+        print("++ (app.py) userSearch: '" + userSearch + "'")
     
     return render_template('userSearch.html',title=userSearch,
                                              users=a,
@@ -136,19 +152,27 @@ def profile(username):
     #TODO: make the URls just the username, don't have them include the UID
     userID = session.get('uID')
 
-    #get user information
-    #TODO: we really shouldn't be getting userInfo if current_uID is None. More generally,
-    #we need to decide how to handle loading this page if the user is not logged in (and therefore current_uID is None)
+    #connect to database
     conn = dba.getConn(currDB)
     #TODO: see hwk6 to handle when user is an empty string (see movies route)
-    
+
     if (userID!=None):
-        #TODO: (ELLIE) add another condition here so that this only happens when a user is viewing their own page (right now this happens when they're viewing ANY profile)
-        #if the user is logged in
+        #check that the username in the url matches this user's username
+        uNameCheck = dba.checkCorrectUser(conn,username,userID)
+        if not uNameCheck[0]:
+            #user is trying to access a profile of someone other than themselves
+            if userID != None:
+                flash('redirecting to YOUR profile; use search user tab instead')
+                return redirect(url_for('profile', username=uNameCheck[1]))
+            else:
+                flash('you aren\'t logged in!')
+                return redirect(url_for('index'))
+
+        #if the user is logged in correctly we can grab data
         userInfo = dba.getUserInfo(conn, userID)
 
         #variables for formatting template
-        titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
+        titleString = userInfo['first_Name'] + ' ' + userInfo['last_Name']
         userURL = userInfo['username'].lower()
 
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
@@ -157,10 +181,12 @@ def profile(username):
         #get achievements
         allComps = dba.getCompAchieves(conn, userID)
         allStars = dba.getStarAchieves(conn, userID)
-
+        
         #calculate emissions
         has_carbon_data = dba.doesUserHaveCarbonData(conn, userID)
-        print('++ has_carbon_data in profile route: ' + str(has_carbon_data))
+        if debug:
+            print('++ (app.py) has_carbon_data in profile route: ' + str(has_carbon_data))
+        
         if has_carbon_data:
             emissionsRAW = dba.calculateUserFootprint(conn, userID)
             emissions = dba.prettyRound(emissionsRAW)
@@ -199,23 +225,27 @@ def reportData(user):
                                     request.form['turkey'], 
                                     request.form['chicken'], 
                                     request.form['laundry'])
+    
+    #check achievements that we need to check for the user
+    atm.updateAutomaticAchieves(conn) #right now these are leadership achieves
+
     return(redirect(url_for('profile', user=user)))
 
 
 '''route to handle actions users can take from their profile, including:
 report achievements
 view statistics
-search users
 '''
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
 @app.route('/useraction/<user>/', methods=['POST', 'GET'])
 def useract(user):
-    
-
     #TODO: do we want to change this so that you can only view your own profile?
     #the way it is right now, profiles are publicly viewable and we should really
     #think about whether randos are able to edit other peoples' profiles this way
     #The if/else's I (alissa) set up should prevent randos from editing: see profile.html
+
+    #check achievements that we need to check for the user
+    atm.updateAutomaticAchieves(conn) #right now these are leadership achieves
 
     #grab the user id
     UID = session.get('uID')
@@ -257,7 +287,8 @@ def searchedProfile(user):
 
     #calculate emissions of the searched user
     has_carbon_data = dba.doesUserHaveCarbonData(conn, searchedID)
-    print('++ has_carbon_data in searched-profile route: ' + str(has_carbon_data))
+    if debug:
+        print('++ (app.py) has_carbon_data in searched-profile route: ' + str(has_carbon_data))
     if has_carbon_data:
         emissionsRAW = dba.calculateUserFootprint(conn, searchedID)
         emissions = dba.prettyRound(emissionsRAW)
@@ -391,9 +422,12 @@ def setUID():
         row = dba.getUIDOnLogin(conn, username)
         userID = row['UID']
         hashed_password = row['password']
-        print('++ got all necessary data in login')
+        
+        if debug:
+            print('++ (app.py) got all necessary data in login')
         if userID == -1:
-            print("++ the database didn't think your username was legit")
+            if debug:
+                print("++ (app.py) the database didn't think your username was legit")
             flash("login incorrect. Try again or join")
             return redirect(url_for('index'))
         else:
@@ -402,12 +436,14 @@ def setUID():
 
             if hashed2_str == hashed_password:
                 #log in success!
-                print('++ your password was right! logging you in')
+                if debug:
+                    print('++ (app.py) your password was right! logging you in')
                 flash('successfully logged in as '+username)
                 session['uID'] = userID
 
                 currentUser = session.get('uID')
-                print("++ uID:", currentUser)
+                if debug:
+                    print("++ (app.py) uID:", currentUser)
 
                 #check achievements that we need to check for the user
                 atm.updateAutomaticAchieves(conn)
@@ -416,7 +452,8 @@ def setUID():
                 username=dba.getUserInfo(conn, currentUser)['username']
                 return redirect(url_for('profile', username=username))
             else:
-                print('++ your password was probably wrong')
+                if debug:
+                    print('++ (app.py) your password was probably wrong')
                 flash('login incorrect. Try again or join')
                 return redirect(url_for('login'))
     except Exception as err:
@@ -429,14 +466,14 @@ def signup():
     signupSuccessful=False
     if request.method == "GET":
         #get method renders a page w a form
-        return render_template('signup.html')
+        return render_template('signup.html', title="Sign Up")
     else:
         try:
             username = request.form['username']
             passwd1 = request.form['password1']
             passwd2 = request.form['password2']
             if passwd1 != passwd2:
-                print('++ passwords do not match')
+                print('++ (app.py) passwords do not match')
                 flash('passwords do not match')
                 return redirect(url_for('signup'))
             #hash the password the user provided
@@ -450,9 +487,9 @@ def signup():
             conn = dba.getConn(currDB)
             uID = dba.setUIDOnSignup(conn, username, hashed_str, fName, lName)['UID']
             #if this is a dictionary make it a string
-            print('++ uID after signup: ' + str(uID))
+            print('++ (app.py) uID after signup: ' + str(uID))
             if uID != -1:
-                print('++ logging you in! after signup')
+                print('++ (app.py) logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
 
@@ -462,7 +499,7 @@ def signup():
                 username = username=dba.getUserInfo(conn, session.get('uID'))['username']
                 return redirect(url_for('profile', username=username))
             else:
-                print('++ username already taken on signup')
+                print('++ (app.py) username already taken on signup')
                 session['uID'] = None
                 flash("that username is already taken! try again")
                 return redirect(url_for('signup'))

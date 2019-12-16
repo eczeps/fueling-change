@@ -5,13 +5,21 @@
 carbon footprint questions on it too-->
 
 {% block body %}
+<h1>{{title}}</h1>
 
-<form action="{{url_for('signup')}}" method="POST">
-    <label>Username: <input type="text" name="username" label="username"></label>
-    <label>Password: <input type="password" name="password1" label="username"></label>
-    <label>Re-type Password: <input type="password" name="password2" label="username"></label>
-    <label>First Name: <input type="firstName" name="firstName" label="firstName"></label>
-    <label>Last Name: <input type="lastName" name="lastName" label="lastName"></label>
+<form class="medform" action="{{url_for('signup')}}" method="POST">
+    <table>
+        <tr><td class="signup"><label>Username:</label></td>
+            <td><input type="text" name="username" label="username"></td></tr>
+        <tr><td class="signup"><label>Password:</label></td>
+            <td><input type="password" name="password1" label="username"></td></tr>
+        <tr><td class="signup"><label>Re-type Password:</label></td class="wide">
+            <td><input type="password" name="password2" label="username"></td></tr>
+        <tr><td class="signup"><label>First Name:</label></td>
+            <td><input type="firstName" name="firstName" label="firstName"></td></tr>
+        <tr><td class="signup"><label>Last Name:</label></td>
+            <td><input type="lastName" name="lastName" label="lastName"></td></tr>
+    </table>
     <input type="submit" value="Sign Up">
 </form>
 

@@ -7,10 +7,13 @@
 <h1>{{title}}</h1>
 
 <form action="{{url_for('setUID')}}" method="POST">
-    
-    <label>Username:<input type="text" name="username"></label>
-    <label>Password: <input type="password" name="password"></label>
-    <input type="submit" value="Log In">
+    <table>
+        <tr><td class="signup"><label>Username:</label></td class="signup">
+            <td><input type="text" name="username"></td></tr>
+        <tr><td class="signup"><label>Password:</label></td>
+            <td><input type="password" name="password"></td></tr>
+    </table>
+        <input type="submit" value="Log In">
 </form>
 
 <p>Don't have an account yet? <a href="{{url_for('signup')}}">Sign up here!</a></p>

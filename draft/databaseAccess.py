@@ -9,6 +9,11 @@ d = "atinney_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
+#set the below to True to increase console output
+debug=False
+debugLong=False
+
+
 # ==========================================================
 
     # ==== KEY ====
@@ -110,13 +115,14 @@ def getIsSelfReport(conn, AID):
 
 # A-A-6
 def getAchievePeople(conn, AID):
-    '''Returns the UID, first_Name, last_Name, username, and count
-    for people who have completed this achievement'''
+    '''Returns the UID, first_Name, last_Name, username, footprint,
+    and count for people who have completed this achievement
+    Listed by ascending order of count then footprint.'''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select UID, first_Name, last_Name, username, count 
+    curs.execute('''select UID, first_Name, last_Name, username, footprint, count 
                     from completed inner join user using (UID) 
                     where AID = %s''', [AID])
-    return curs.fetchall()
+    return sorted(curs.fetchall(), key=lambda u: (u['count'], u['footprint']))
 
 
 # ==== ACCESS INFORMATION BASED ON USERS ====
@@ -135,42 +141,62 @@ def getUserInfo(conn, UID):
     '''Returns user information, as a dictionary.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select first_Name, last_Name, username
+    curs.execute('''select first_Name, last_Name, username, footprint
                     from user
                     where UID=%s''', [UID])
     return curs.fetchone()
 
 # A-U-3
-def getUsers(conn, searchTerm): 
-    '''Returns the UID, first name, last name, and username
-    of all users that have a similar field to the search,
-    as a list of dictionaries.
+def getUsers(conn, searchTerm, sort="footprint"): 
+    '''Returns the first name, last name, username,
+    and footprint of all users that have a similar field
+    to the search, as a list of dictionaries.
+
+    sortTyp: 'asc' or 'desc'
     '''
     curs = dbi.dictCursor(conn)
     searchTerm = "%" + searchTerm + "%"
-    curs.execute('''select UID, first_Name, last_Name, username
+    curs.execute('''select first_Name, last_Name, footprint, username
                     from user
                     where first_Name like %s
                     or last_Name like %s
                     or username like %s''',
                     [searchTerm,searchTerm,searchTerm])
-    return curs.fetchall()
+    return sorted(curs.fetchall(), key=lambda u: (u[sort], u['username']))
+
+#TODO: (ALISSA) for above and below make them able to handle multiple sort options
+    #ie: # of comp/star achis, count of specific comp achi, type? of most comp achis
+    #these are statistics woo
+        #type like electric car falls under transportation, no meat falls under foot etc
+        #could be used for pie graphs... (low priority)
 
 # A-U-4
+def getAllUsers(conn, sort="footprint"):
+    '''Returns the first name, last name, username,
+    and footprint of all users, as a list of dictionaries.
+
+    sortTyp: 'asc' or 'desc'
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select first_Name, last_Name, footprint, username
+                    from user''')
+    return sorted(curs.fetchall(), key=lambda u: (u[sort], u['username']))
+
+# A-U-5
 def getCompAchieves(conn, UID):
     '''Returns the AID, title, description, and count of this user's
     completed achievements, as a list of dictionaries.
     '''
     curs = dbi.dictCursor(conn)
     #also need to do join for count here
-    curs.execute('''select completed.AID,title,description,count
+    curs.execute('''select completed.AID,title,description,count,isRepeatable
                     from completed
                     join achievement
                     on achievement.AID=completed.AID
                     where UID=%s''', [UID])
     return curs.fetchall()
 
-# A-U-5
+# A-U-6
 def getStarAchieves(conn, UID):
     '''Returns the AID, title, and description of this user's
     starred achievements, as a list of dictionaries.
@@ -183,13 +209,13 @@ def getStarAchieves(conn, UID):
                     where UID=%s''', [UID])
     return curs.fetchall()
 
-# A-U-6
+# A-U-7
 def doesUserHaveCarbonData(conn, UID):
     curs = dbi.dictCursor(conn)
     curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
     return curs.fetchone()['has_carbon_data']
 
-# A-U-7
+# A-U-8
 def getUserFootprint(conn, UID):
     '''given a user's UID, gets their current footprint data
     when we don't need to recalculate it'''
@@ -197,7 +223,7 @@ def getUserFootprint(conn, UID):
     curs.execute('''select uid, footprint from user where uid=%s''', [UID])
     return curs.fetchone()['footprint']
 
-# A-U-8
+# A-U-9
 def getUIDOnLogin(conn, username):
     #returns the user ID of the user with this username and password, or
     #return -1 if it's an invalid username/password combo
@@ -211,14 +237,26 @@ def getUIDOnLogin(conn, username):
     else:
         return -1
 
-# A-U-9
+# A-U-10
 #TODO: delete this once logins & signups are working
 def getSaltByUsername(conn, username):
-    #returns the salt associated with the given username
-    #this is called when someone is logging in and we're checking their password
+    '''returns the salt associated with the given username
+    this is called when someone is logging in and we're checking their password
+    '''
     curs = dbi.dictCursor(conn)
     curs.execute('''select salt from user where username = %s''', [username])
     return curs.fetchone()
+
+def checkCorrectUser(conn,username,UID):
+    '''Goes into the database to check if this username matches
+    the userID's username of the person who is logged in.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select username from user where uid=%s''',[UID])
+    currUsername = curs.fetchone()['username']
+    # TODO: Can usernames be uppercased at all?
+
+    return ((username == currUsername), currUsername)
 
 
 # ==== ACCESS INFORMATION BASED ON USERS AND ACHIEVEMENTS ====
@@ -274,7 +312,7 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
                     lamb, beef, cheese, pork, turkey, chicken, laundry, True, UID])
 
 # M-U-2
-def calculateUserFootprint(conn, UID, p=False):
+def calculateUserFootprint(conn, UID):
     '''given a user's UID, get their info from the database and uses the
     carbon footprint calculator (calculator.py) to calculate and return 
     a total footprint
@@ -294,8 +332,8 @@ def calculateUserFootprint(conn, UID, p=False):
                     from user where UID = %s
                 ''', [UID])
     userData = curs.fetchone()
-    if p:
-        print('++ userData in databaseaccess: ' + str(userData))
+    if debug:
+        print('++ (databaseAccess.py) userData: ' + str(userData))
     total = calculator.plane_emissions(userData['miles_flown']) \
             + calculator.car_emissions(userData['miles_driven']) \
             + calculator.meat_emissions(userData['servings_lamb'], \

@@ -42,7 +42,9 @@
         <th>First Name</th>
         <th>Last Name</th>
         <th>Username</th>
-        <th> number of times achieved </th>
+        {% if info['isRepeatable'] == 1 %}
+            <th> number of times achieved </th>
+        {% endif %}
     </tr>
 
     {% for user in users %}
@@ -50,7 +52,9 @@
         <td><span class="first">{{user['first_Name']}}</span></td>
         <td class="last">{{user['last_Name']}}</td>
         <td class="username"><a href="{{url_for('searchedProfile', user=user['username'])}}">{{user['username']}}</a></td>
-        <td class="count">{{user['count']}}</td>
+        {% if info['isRepeatable'] == 1 %}
+            <td class="count">{{user['count']}}</td>
+        {% endif %}
     </tr>
     {% endfor %}
 

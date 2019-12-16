@@ -34,7 +34,7 @@ about all possible achievements a user can earn */
 create table achievement(
 	AID int auto_increment,
 	title varchar(30),
-	description varchar(50),
+	description varchar(100),
 	isRepeatable boolean not null default 0,
 	isSelfReport boolean not null default 0,
 	-- boolean in mysql is tinyint(1)

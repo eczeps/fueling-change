@@ -1,3 +1,6 @@
+-- ONLY ADD ACHIEVEMENTS TO THE BOTTOM OF THIS FILE
+-- ANYTHING ELSE WILL BREAK automatics.py
+
 -- Creating achievements
 insert into achievement(title,description)
 values ('Joined Fueling Change!','Started their journey to lower carbon footprint');
@@ -26,20 +29,47 @@ values ('Electric Cars Go VROOM!','Buy an electric car.',1,1);
 insert into achievement(title,description,isSelfReport)
 values ('Earth Powers','Upgraded to geothermal energy.',1);
 
-insert into achievement(title,description,isSelfReport)
-values ('Solar Powers','Installed solar panels.',1);
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Solar Powers','Installed solar panels on home.',1,1);
 
-insert into achievement(title,description,isSelfReport)
-values ('Wind Powers','Built a personal wind turbine.',1);
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Wind Powers','Incorporated a wind turbine into home energy sources.',1,1);
+
+insert into achievement(title,description)
+values ('Leader!','Claim the number one spot of users.');
 
 insert into achievement(title,description)
 values ('Top 10','Claim a spot in the top 10 percent of users.');
 
 insert into achievement(title,description)
+values ('Top 25','Claim a spot in the top 25 percent of users.');
+
+insert into achievement(title,description)
 values ('Top 50','Claim a spot in the top 50 percent of users.');
+
+insert into achievement(title,description,isRepeatable)
+values ('Once Upon a Time: Leader!','Has held a spot in the number one spot of users.',1);
 
 insert into achievement(title,description,isRepeatable)
 values ('Once Upon a Time: Top 10','Has held a spot in the top 10 percent of users.',1);
 
 insert into achievement(title,description,isRepeatable)
+values ('Once Upon a Time: Top 25','Has held a spot in the top 25 percent of users.',1);
+
+insert into achievement(title,description,isRepeatable)
 values ('Once Upon a Time: Top 50','Has held a spot in the top 50 percent of users.',1);
+
+insert into achievement(title,description)
+values ("I've Been Around",'Obtained five unique achievements.');
+
+insert into achievement(title,description)
+values ("I'll Be Here All Night",'Obtained ten unique achievements.');
+
+insert into achievement(title,description)
+values ("I'll Be Here For A LOOONG While",'Obtained fifty unique achievements.');
+
+insert into achievement(title,description)
+values ("I'll Be Here All Night",'Obtained all unique achievements at least once.');
+
+insert into achievement(title,description)
+values ("I'm Here To Stay",'Obtained all unique achievements more than once.');

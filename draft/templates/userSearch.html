@@ -18,8 +18,11 @@
 
 
 {% block search %}
-<form id="uSearch" method=POST action="/users/">
-    <label>Search: <input id="searchterm" placeholder="Search" name="searchterm"></label>
+<form class="searchform" id="uSearch" method=POST action="/users/">
+    <table>
+        <tr><td class="signup"><label>Search:</label></td>
+            <td><input id="searchterm" placeholder="Search" name="searchterm"></td></tr>
+    </table>
     <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
 </form>
 {% endblock %}
@@ -27,12 +30,13 @@
 
 {% block body %}    
 <!--Handles cases where user searched for a user and when there was no search term-->
-    {% if title == "" %}
-        <h1>Search for Users Above</h1>
-        <div class="tempinvisible">
+    {% if title == "" and request.form['submit'] == 'userSearch' %}
+        <h1>Showing All Users:</h1>
+    {% elif title == "" %}
+        <h1>Leadership Board:</h1>
+        <p>Search for users above.</p> 
     {% else %}
         <h1>Showing Users Matching <i>{{title}}</i>:</h1>
-        <div class="visible">
     {% endif %}
     
     <table id="searchedUsers">
@@ -40,19 +44,17 @@
             <th>First Name</th>
             <th>Last Name</th>
             <th>Username</th> <!--link on this.-->
-            <!-- <th>Footprint</th> -->
+            <th>Footprint (<sup>CO<sub>2</sub> kg</sup>&frasl;<sub>year</sub>)</th>
         </tr>
         
         <!--iterate over users in the search results and display them in a table-->
-        {% if title != "" %}
-            {% for usr in users %}
+        {% for usr in users %}
             <tr>
                 <td>{{usr['first_Name']}}</td>
                 <td>{{usr['last_Name']}}</td>
                 <td><a href="{{url_for('searchedProfile', user = usr['username'])}}">{{usr['username']}}</a></td>
+                <td>{{usr['footprint']}}</td>
             </tr>
-            {% endfor %}
-        {% endif %}
+        {% endfor %}
     </table>
-    </div> <!-- ends div with class tempinvisible or visible -->
 {% endblock %}

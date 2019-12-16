@@ -6,6 +6,8 @@ import databaseAccess as dba
 import sys,math
 # the database to use:
 currDB = dba.d
+debug = dba.debug
+debugLong = dba.debugLong
 
 # ==========================================================
 # The functions that do most of the work for automatic achiements.
@@ -13,9 +15,10 @@ currDB = dba.d
 def updateAutomaticAchieves(conn):
     '''Adds or removes the user's automatic achievements as we see fit.
     '''
-    leadershipCheck=[12,13]
+    leadershipCheck=[12,13,14,15]
     for i in leadershipCheck:
         updateLeaders(conn, i)
+
 
 def updateLeaders(conn, AID): #AID is an int
     '''Adds or removes a particular leader related achievement.
@@ -30,34 +33,52 @@ def updateLeaders(conn, AID): #AID is an int
     calc = ""
     dependentUpdate = None
     
-    if AID==12: #Top 10
+    if AID==12:
+        dependentUpdate = 16 #for Once Upon A Time: Leader!
+    elif AID==13: #Top 10
         calc = 10.0
-        dependentUpdate = 14 #for Once Upon A Time: Top 10
-    elif AID==13: #Top 50
+        dependentUpdate = 17 #for Once Upon A Time: Top 10
+    elif AID==14: #Top 25
+        calc = 4.0
+        dependentUpdate = 18 #for Once Upon A Time: Top 25
+    elif AID==15: #Top 50
         calc = 2.0
-        dependentUpdate = 15 #for Once Upon A Time: Top 50
+        dependentUpdate = 19 #for Once Upon A Time: Top 50
     else:
         print("*** ERROR: AID " + str(AID) + " not recognized ***")
         exit #the function i think but it shouldn't happen!
 
     #possibly new current leaders
-    curs.execute('''select uid 
-                    from user 
-                    where footprint <= (select max(footprint)/%s from user)''',
-                 [calc])
+    if AID!=12:
+        curs.execute('''select uid 
+                        from user 
+                        where footprint <= (select max(footprint)/%s from user)''',
+                    [calc])
+    else:
+        curs.execute('''select uid 
+                        from user 
+                        where footprint = (select min(footprint) from user)''')
     currLead = curs.fetchall()
-    print("++ currentlyLeading:", currLead)
+    if debug:
+        print("++ (automatics.py) currentlyLeading:", currLead)
 
     #already current leaders
     curs.execute('''select uid from completed where aid=%s''', [AID])
     currLeadAlready = curs.fetchall()
 
     #all users
-    curs.execute('''select uid,footprint from user''')
+    curs.execute('''select footprint,uid,username from user order by footprint asc''')
     allUsers = curs.fetchall()
     #TODO: how will we do deletions? will we store any data?
+
+    if debug:
+        print("++ (automatics.py) allUsers:", allUsers)
     
     for u in allUsers:
+        if debugLong:
+            print('======')
+            print("++++ (automatics.py) username:", u['username'])
+
         #get counting
         curs.execute('''select count from completed where uid=%s and aid=%s''',
                      [u['uid'], dependentUpdate])
@@ -65,24 +86,27 @@ def updateLeaders(conn, AID): #AID is an int
 
         #for the first time the user is added to this achievement
         safeExistingCount = 0
-        safe = False
         if (existingCount != None):
             safeExistingCount = existingCount['count']
-            safe = True
 
-        print("++ existingCount:", existingCount)
+        if debugLong:
+            print("++++ (automatics.py) existingCount:", existingCount)
 
         isALeaderAlready = len(list(filter(lambda user: user['uid'] == u['uid'], currLeadAlready))) != 0
         isALeaderNow = len(list(filter(lambda user: user['uid'] == u['uid'], currLead))) != 0
 
-        print('isALeaderAlready:', isALeaderAlready)
-        print('isALeaderNow:', isALeaderNow)
+        if debugLong:
+            print('++++ (automatics.py) isALeaderAlready:', isALeaderAlready)
+            print('++++ (automatics.py) isALeaderNow:', isALeaderNow)
+
         #check if the user was leading and no longer leading
         if (isALeaderAlready and not isALeaderNow):
             updatedCount = safeExistingCount + 1
 
-            print("safe:", safe)
-            if safe:
+            if debugLong:
+                print("++++ (automatics.py) safe:", (safeExistingCount != 0))
+
+            if safeExistingCount != 0:
                 dba.updateCompletedCount(conn, u['uid'], dependentUpdate, updatedCount)
             else:
                 dba.insertCompleted(conn, u['uid'], dependentUpdate)
@@ -95,4 +119,5 @@ def updateLeaders(conn, AID): #AID is an int
             dba.insertCompleted(conn, u['uid'], AID)
         
         else:
-            print("++ no change to achievement " + str(AID) + " for user" + str(u['uid']))
+            if debugLong:
+                print("++++ (automatics.py) no change to achievement " + str(AID) + " for " + u['username'])

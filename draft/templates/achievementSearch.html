@@ -18,9 +18,12 @@
 
 
 {% block search %}
-<form id="searchTop" method=POST action="/achievements/">
-    <label>Search: <input id="searchtermTop" placeholder="Search" name="searchterm"></label>
-    <button id="searchbutton" type="submit" name="submit" value="Search">Search</button>
+<form class="searchform" id="searchTop" method=POST action="/achievements/">
+    <table>
+        <tr><td class="signup"><label>Search:</label></td>
+            <td><input id="searchtermTop" placeholder="Search" name="searchterm"></td></tr>
+    </table>
+    <button id="searchbutton" type="submit" name="submit" value="Search">Search Achievements</button>
 </form>
 {% endblock %}
 
