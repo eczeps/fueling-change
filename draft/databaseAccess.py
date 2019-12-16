@@ -135,7 +135,7 @@ def getUserInfo(conn, UID):
     '''Returns user information, as a dictionary.
     '''
     curs = dbi.dictCursor(conn)
-    curs.execute('''select first_Name, last_Name, username, footprint
+    curs.execute('''select first_Name, last_Name, username, footprint, photo
                     from user
                     where UID=%s''', [UID])
     return curs.fetchone()

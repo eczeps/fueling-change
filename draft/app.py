@@ -179,7 +179,7 @@ def profile(username):
         #variables for formatting template
         titleString = userInfo['first_Name'] + ' ' + userInfo['last_Name']
         userURL = userInfo['username'].lower()
-        userPhoto = userInfo['photo']
+        userPhoto = "pictures/" + userInfo['photo']
 
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
