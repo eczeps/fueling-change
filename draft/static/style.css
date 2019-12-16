@@ -158,6 +158,26 @@ li a:hover:not(.active) {
     display: block;
 }
 
+/* for side by side divs */
+#wrapper {
+    display: flex;
+}
+  
+#left {
+    flex: 0 0 182px;
+}
+  
+#right {
+    flex: 1;
+}
+
+img {
+    width: 182px;
+    height: auto;
+    padding-top: 25px;
+    padding-right: 10px;
+}
+
 /* For the table */
 table {
     margin-left:auto; 

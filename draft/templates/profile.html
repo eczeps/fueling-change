@@ -26,6 +26,14 @@
 
 {% block body %}
     {% if request.method == "GET" %}
+
+    <div id="wrapper">
+        <div id="left">
+            <img src="{{url_for('static', filename = 'pictures/earth.jpg')}}"
+                 alt="Profile Photo for {{title}}"/>
+        </div> <!-- end of left div -->
+        
+        <div id="right">
         <h1>Hi {{title}}</h1> 
         <p>Your current emissions are {{emissions}} kilograms of carbon dioxide per year</p>
         <p>What would you like to do today?</p>
@@ -38,7 +46,8 @@
             <button id="reportbtn" class="report-button" type="submit" name="submit" value="stats">View My Statistics</button>
             <!-- statistics also includes achievements -->
         </form>
-
+        </div> <!-- end of right div -->
+    </div> <!-- end of wrapper div -->
     
     {% else %}
     <h1>Viewing {{title}}'s Achievements</h1>
