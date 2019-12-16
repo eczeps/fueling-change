@@ -3,6 +3,7 @@
 
 /* how to do variables: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties */
 :root {
+    --light-green: rgb(178, 250, 89);
     --green: #78C31E;
     --dark-green: #147818;
     --light-blue: #1A94F9;
@@ -169,7 +170,7 @@ th {
 }
 
 th.wide{
-    width: 400px;
+    width: 450px;
 }
 
 .small {
@@ -179,6 +180,11 @@ th.wide{
 th, td {
     text-align: center;
     overflow: hidden;
+}
+
+.colored {
+    background-color: var(--light-green);
+    padding: 0px;
 }
 
 td.signup {

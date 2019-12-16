@@ -48,12 +48,16 @@
     </tr>
 
     {% for user in users %}
-    <tr data-id = "{{user['AID']}}"> 
+    {% if loop.index % 2 != 0 %}
+        <tr class="colored" data-id = "{{user['AID']}}">
+    {% else %}
+        <tr data-id = "{{user['AID']}}">
+    {% endif %}
         <td><span class="first">{{user['first_Name']}}</span></td>
         <td class="last">{{user['last_Name']}}</td>
-        <td class="username"><a href="{{url_for('searchedProfile', user=user['username'])}}">{{user['username']}}</a></td>
+        <td class="username"><b><a href="{{url_for('searchedProfile', user=user['username'])}}">{{user['username']}}</a></b></td>
         {% if info['isRepeatable'] == 1 %}
-            <td class="count">{{user['count']}}</td>
+            <td class="count"><b>{{user['count']}}</b></td>
         {% endif %}
     </tr>
     {% endfor %}

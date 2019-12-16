@@ -31,18 +31,19 @@ function call_reset(event){
 
 function append_achiever(AID, first, last, username, count){ //should take in a response 
     var rowitem = '<tr data-id = "' + AID + '"> <td class ="first">"' + first + 
-                '"</td> <td class ="last">"' + last + '"</td> <td class ="username">' + 
-                username + '</td> <td class ="count">' + count + '</td></tr>';
+                '"</td> <td class ="last">"' + last + '"</td> <td class ="username"><b>' + 
+                username + '</b></td> <td class ="count"><b>' + count + '</b></td></tr>';
     $("#achievers").append(rowitem);
 }
 
+//TODO: make the adding pretty for achievements that aren't repeatable
 function append_achiever2(resp){ //should take in a response 
     // can't use url_for in js
     var usrURL = "/searched-profile/" + resp.username + "/"
     var rowitem = '<tr data-id = "' + resp.AID + '"> <td class ="first">' + resp.first + 
     '</td> <td class ="last">' + resp.last + 
-    '</td> <td class ="username"><a href="' + usrURL + '" >' + 
-    resp.username + '</a></td> <td class ="count">' + resp.count + '</td></tr>';
+    '</td> <td class ="username"><b><a href="' + usrURL + '" >' + 
+    resp.username + '</a></b></td> <td class ="count"><b>' + resp.count + '</b></td></tr>';
     $("#achievers").append(rowitem);
     $("#completed").text("Congrats! You've completed this achievement!");
     document.getElementById("hideshow").style.display = "block";

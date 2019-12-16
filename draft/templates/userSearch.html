@@ -41,6 +41,9 @@
     
     <table id="searchedUsers">
         <tr>
+            {% if title == "" and request.form['submit'] != 'userSearch' %}
+                <th class="small">Rank</th>
+            {% endif %}
             <th>First Name</th>
             <th>Last Name</th>
             <th>Username</th> <!--link on this.-->
@@ -49,10 +52,17 @@
         
         <!--iterate over users in the search results and display them in a table-->
         {% for usr in users %}
-            <tr>
+            {% if loop.index % 2 != 0 %}
+                <tr class="colored">
+            {% else %}
+                <tr>
+            {% endif %}
+                {% if title == "" and request.form['submit'] != 'userSearch' %}
+                    <td><b>{{loop.index}}</b></td>
+                {% endif %}
                 <td>{{usr['first_Name']}}</td>
                 <td>{{usr['last_Name']}}</td>
-                <td><a href="{{url_for('searchedProfile', user = usr['username'])}}">{{usr['username']}}</a></td>
+                <td><b><a href="{{url_for('searchedProfile', user = usr['username'])}}">{{usr['username']}}</a></b></td>
                 <td>{{usr['footprint']}}</td>
             </tr>
         {% endfor %}

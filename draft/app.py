@@ -162,7 +162,7 @@ def profile(username):
         if not uNameCheck[0]:
             #user is trying to access a profile of someone other than themselves
             if userID != None:
-                flash('redirecting to YOUR profile; use search user tab instead')
+                flash('redirecting to your profile')
                 return redirect(url_for('profile', username=uNameCheck[1]))
             else:
                 flash('you aren\'t logged in!')
@@ -244,15 +244,15 @@ def useract(user):
     #think about whether randos are able to edit other peoples' profiles this way
     #The if/else's I (alissa) set up should prevent randos from editing: see profile.html
 
-    #check achievements that we need to check for the user
-    atm.updateAutomaticAchieves(conn) #right now these are leadership achieves
-
     #grab the user id
     UID = session.get('uID')
 
     #get information
     conn = dba.getConn(currDB)
     userInfo = dba.getUserInfo(conn, UID)
+
+    #check achievements that we need to check for the user
+    atm.updateAutomaticAchieves(conn) #right now these are leadership achieves
 
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()

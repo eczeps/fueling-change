@@ -45,7 +45,7 @@
     <table id="achieves">
         <tr>
             <th>Title</th>
-            <th>Description</th>
+            <th class="wide">Description</th>
             <th class="small">Repeatable</th>
             {% if isLoggedIn %}
                 <th class="small">Star Achievement</th>
@@ -56,8 +56,12 @@
         {% for achievement in achievements %}
         {% set aID = achievement['AID'] %}
         {% set repeatable = achievement['isRepeatable'] %}
-        <tr data-tt="{{aID}}">
-            <td><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></td>
+        {% if loop.index % 2 != 0 %}
+            <tr class="colored" data-tt="{{aID}}">
+        {% else %}
+            <tr data-tt="{{aID}}">
+        {% endif %}
+            <td><b><a href="{{url_for('achieveinfo', AID = achievement['AID'])}}">{{achievement['title']}}</a></b></td>
             <td>{{achievement['description']}}</td>
             <td class="small"> 
                 {% if repeatable == 1 %}

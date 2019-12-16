@@ -36,28 +36,28 @@ insert into achievement(title,description,isRepeatable,isSelfReport)
 values ('Wind Powers','Incorporated a wind turbine into home energy sources.',1,1);
 
 insert into achievement(title,description)
-values ('Leader!','Claim the number one spot of users.');
+values ('Leader!','Claim the number one spot of users based on carbon footprint.');
 
 insert into achievement(title,description)
-values ('Top 10','Claim a spot in the top 10 percent of users.');
+values ('Top 10!','Claim a spot in the top 10 percent of users based on carbon footprint.');
 
 insert into achievement(title,description)
-values ('Top 25','Claim a spot in the top 25 percent of users.');
+values ('Top 25!','Claim a spot in the top 25 percent of users based on carbon footprint.');
 
 insert into achievement(title,description)
-values ('Top 50','Claim a spot in the top 50 percent of users.');
+values ('Top 50!','Claim a spot in the top 50 percent of users based on carbon footprint.');
 
 insert into achievement(title,description,isRepeatable)
 values ('Once Upon a Time: Leader!','Has held a spot in the number one spot of users.',1);
 
 insert into achievement(title,description,isRepeatable)
-values ('Once Upon a Time: Top 10','Has held a spot in the top 10 percent of users.',1);
+values ('Once Upon a Time: Top 10!','Has held a spot in the top 10 percent of users.',1);
 
 insert into achievement(title,description,isRepeatable)
-values ('Once Upon a Time: Top 25','Has held a spot in the top 25 percent of users.',1);
+values ('Once Upon a Time: Top 25!','Has held a spot in the top 25 percent of users.',1);
 
 insert into achievement(title,description,isRepeatable)
-values ('Once Upon a Time: Top 50','Has held a spot in the top 50 percent of users.',1);
+values ('Once Upon a Time: Top 50!','Has held a spot in the top 50 percent of users.',1);
 
 insert into achievement(title,description)
 values ("I've Been Around",'Obtained five unique achievements.');
@@ -66,10 +66,19 @@ insert into achievement(title,description)
 values ("I'll Be Here All Night",'Obtained ten unique achievements.');
 
 insert into achievement(title,description)
-values ("I'll Be Here For A LOOONG While",'Obtained fifty unique achievements.');
+values ("I'm Here To Stay",'Obtained fifteen unique achievements.');
 
 insert into achievement(title,description)
-values ("I'll Be Here All Night",'Obtained all unique achievements at least once.');
+values ("I'll Be Here Forever",'Obtained all unique achievements at least once.');
 
 insert into achievement(title,description)
-values ("I'm Here To Stay",'Obtained all unique achievements more than once.');
+values ("I'm Here Longer Than Forever",'Obtained all unique and repeatable achievements more than once.');
+
+insert into achievement(title,description)
+values ("Super Powered!",'Obtained all three (Earth, Wind, Solar) of the Power Achievements.');
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Biked','Biked to Work/School.',1,1);
+
+insert into achievement(title,description,isRepeatable,isSelfReport)
+values ('Bipedal','Walked to Work/School.',1,1);

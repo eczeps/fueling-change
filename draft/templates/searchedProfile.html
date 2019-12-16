@@ -21,15 +21,19 @@
             
             {% for achievement in compAchis %}
             {% set aID = achievement['AID'] %}
-            <tr data-tt="{{aID}}">
+            {% if loop.index % 2 != 0 %}
+                <tr class="colored" data-tt="{{aID}}">
+            {% else %}
+                <tr data-tt="{{aID}}">
+            {% endif %}
                 <td class="count">
                     {% if achievement['isRepeatable']==1 %}
-                        {{achievement['count']}}
+                        <b>{{achievement['count']}}</b>
                     {% else %}
                         &#x2714;
                     {% endif %}
                 </td>
-                <td class="title"><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></td>
+                <td class="title"><b><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></b></td>
                 <td class="description">{{achievement['description']}}</td>
             </tr>
             {% endfor %}
@@ -53,8 +57,12 @@
             
             {% for achievement in starAchis %}
             {% set aID = achievement['AID'] %}
-            <tr data-tt="{{aID}}">
-                <td class="title"><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></td>
+            {% if loop.index % 2 != 0 %}
+                <tr class="colored" data-tt="{{aID}}">
+            {% else %}
+                <tr data-tt="{{aID}}">
+            {% endif %}
+                <td class="title"><b><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></b></td>
                 <td class="description">{{achievement['description']}}</td>
             </tr>
             {% endfor %}
