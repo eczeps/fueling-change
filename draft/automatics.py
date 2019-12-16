@@ -122,7 +122,6 @@ def updateLeaders(conn, AID): #AID is an int
     dependentUpdate = None
     
     if AID==12: #Leader!
-        calc = 1.0
         dependentUpdate = 16 #for Once Upon A Time: Leader!
     elif AID==13: #Top 10
         calc = 10.0
@@ -138,10 +137,15 @@ def updateLeaders(conn, AID): #AID is an int
         exit #the function i think but it shouldn't happen!
 
     #possibly new current leaders
-    curs.execute('''select uid 
+    if AID!=12:
+        curs.execute('''select uid 
+                        from user 
+                        where footprint <= (select max(footprint)/%s from user)''',
+                    [calc])
+    else:
+        curs.execute('''select uid 
                     from user 
-                    where footprint <= (select max(footprint)/%s from user)''',
-                [calc])
+                    where footprint = (select min(footprint) from user)''')
     currLead = curs.fetchall()
     if debug:
         print("++ (automatics.py) currentlyLeading:", currLead)
