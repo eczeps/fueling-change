@@ -261,13 +261,34 @@ def checkCorrectUser(conn,username,UID):
 
 # ==== ACCESS INFORMATION BASED ON USERS AND ACHIEVEMENTS ====
 # A-B-1
-def getUserCompletedAchiev(conn, uid, aid):
-    '''Returns UID, AID, count, timestamp from completed if the specified user has 
-    completed the specified achievement'''
+# def getUserCompletedAchiev(conn, uid, aid):
+#     '''Returns UID, AID, count, timestamp from completed if the specified user has 
+#     completed the specified achievement'''
+#     curs = dbi.dictCursor(conn)
+#     curs.execute('''select * from completed where 
+#                     UID=%s and AID=%s''', [uid, aid])
+#     return curs.fetchone()
+
+def userAchieveExists(conn, UID, AID, tble="completed"):
     curs = dbi.dictCursor(conn)
-    curs.execute('''select * from completed where 
-                    UID=%s and AID=%s''', [uid, aid])
-    return curs.fetchone()
+    if tble == "completed":
+        curs.execute('''select exists 
+                            (select uid,aid from completed 
+                                    where uid=%s and aid=%s) as exist''',
+                     [UID,AID])
+
+    elif tble == "starred":
+        curs.execute('''select exists 
+                            (select uid,aid from starred 
+                                    where uid=%s and aid=%s) as exist''',
+                     [UID,AID])
+    
+    else:
+        errorStmt = "ERROR: table " + tble + " not recognized."
+        print("*** " + errorStmt + " ***")
+        return errorStmt
+    
+    return (curs.fetchone()['exist'] == 1)
 
 # A-B-2
 def getUserForAchievement(conn, UID, AID):

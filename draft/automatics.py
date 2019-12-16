@@ -4,6 +4,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
 import dbi
 import databaseAccess as dba
 import sys,math
+import functools as fts
 # the database to use:
 currDB = dba.d
 debug = dba.debug
@@ -18,7 +19,94 @@ def updateAutomaticAchieves(conn):
     leadershipCheck=[12,13,14,15]
     for i in leadershipCheck:
         updateLeaders(conn, i)
+    
+    updateAchiLeads(conn)
 
+def updateAchiLeads(conn): #AID is an int
+    '''Adds or removes a particular achievement count
+    related achievement. There are six that we care about.
+    [20,21,22,23,24,25]
+    '''
+    curs = dbi.dictCursor(conn)
+
+    #all users
+    curs.execute('''select uid from user''')
+    allUsers = curs.fetchall()
+    
+    #count repeatable achis
+    curs.execute('''select count(*) from achievement where isRepeatable=1''')
+    totalRepCount = curs.fetchone()['count(*)']
+
+    for u in allUsers:
+        UID = u['uid']
+
+        # the number of achievements that user has completed
+        curs.execute('''select count(*) from completed where uid=%s''', [UID])
+        achiCount = curs.fetchone()['count(*)']
+
+        #{AID: minCount}
+        toCheck = [{'AID': 20, 'minCount': 5}, #I've Been Around
+                   {'AID': 21, 'minCount': 10}, #I'll Be Here All Night
+                   {'AID': 22, 'minCount': 15}] #I'm Here To Stay
+
+        for p in toCheck:
+            checkCounts(conn, UID, p['AID'], achiCount, p['minCount'])
+            #(conn, UID, AID, totalCount, count)
+        
+        # the number of repeatable achievements that user has completed
+        curs.execute('''select count(*) from completed 
+                        join achievement on achievement.AID=completed.AID 
+                        where UID=%s and isRepeatable=1''', [u['uid']])
+        usrRepCount = curs.fetchone()['count(*)']
+
+        #I'll Be Here Forever & I'm Here Longer Than Forever
+        checkMaximums(conn, UID, usrRepCount, totalRepCount)
+        
+        checkHighPower(conn, UID) #Super Powered!
+
+def checkCounts(conn, UID, AID, totalCount, count):
+    if totalCount >= count:
+        if not dba.userAchieveExists(conn, UID, AID):
+            dba.insertCompleted(conn, UID, AID)
+    else:
+        dba.deleteCompletedAchiev(conn, UID, AID)
+
+def checkMaximums(conn, UID, usrRepCount, totalRepCount):
+    if usrRepCount==totalRepCount: #I'm Here Forever
+        dba.insertCompleted(conn, UID, 23)
+
+        curs.execute('''select count,aid from completed 
+                    join achievement on achievement.AID=completed.AID 
+                    where UID=%s and isRepeatable=1''', [UID])
+        reps = curs.fetchall()
+
+        #I'm Here Longer Than Forever
+        isLargeCounts = list(map(lambda x: x['count']>=2, reps))
+        doubleOnReps = fts.reduce(lambda x,y: (x and y), isLargeCounts)
+        if doubleOnReps:
+            dba.insertCompleted(conn, UID, 24)
+        else:
+            dba.deleteCompletedAchiev(conn, UID, 24)
+    else:
+        dba.deleteCompletedAchiev(conn, UID, 23)
+
+def checkHighPower(conn, UID):
+    '''Adds or removes achievement 25.
+    '''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select count(*) from completed
+                    where uid=%s and (aid=9 or aid=10 or aid=11)''',
+                [UID])
+    total = curs.fetchone()['count(*)']
+
+    if (total==3):
+        dba.insertCompleted(conn, UID, 25)
+    else:
+        #make sure to remove if it is there
+        #eg: they added and then removed
+        dba.deleteCompletedAchiev(conn, UID, 25)
+        
+    return (total==3)
 
 def updateLeaders(conn, AID): #AID is an int
     '''Adds or removes a particular leader related achievement.
@@ -33,7 +121,8 @@ def updateLeaders(conn, AID): #AID is an int
     calc = ""
     dependentUpdate = None
     
-    if AID==12:
+    if AID==12: #Leader!
+        calc = 1.0
         dependentUpdate = 16 #for Once Upon A Time: Leader!
     elif AID==13: #Top 10
         calc = 10.0
@@ -49,15 +138,10 @@ def updateLeaders(conn, AID): #AID is an int
         exit #the function i think but it shouldn't happen!
 
     #possibly new current leaders
-    if AID!=12:
-        curs.execute('''select uid 
-                        from user 
-                        where footprint <= (select max(footprint)/%s from user)''',
-                    [calc])
-    else:
-        curs.execute('''select uid 
-                        from user 
-                        where footprint = (select min(footprint) from user)''')
+    curs.execute('''select uid 
+                    from user 
+                    where footprint <= (select max(footprint)/%s from user)''',
+                [calc])
     currLead = curs.fetchall()
     if debug:
         print("++ (automatics.py) currentlyLeading:", currLead)
