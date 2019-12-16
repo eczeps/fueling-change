@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "atinney_db"
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -412,6 +412,11 @@ def updateCompletedCount(conn, UID, AID, count):
     curs.execute('''update completed set count = %s 
                     where UID = %s and AID = %s ''', 
                         [count, UID, AID])
+
+def getFunFact(conn, id):
+    curs = dbi.dictCursor(conn)
+    curs.execute('''select fact_description,source from fact where id=%s''', [id])
+    return curs.fetchone()
 
 # ==========================================================
 # This starts the ball rolling, *if* the file is run as a

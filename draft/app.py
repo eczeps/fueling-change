@@ -52,8 +52,13 @@ def index():
         #username being empty
     #--end of accessing current user information
 
+    #generate a random number and use that to pick a fun fact to display
+    randomFunFactInfo = dba.getFunFact(conn, random.randrange(1, 5))
+
     return render_template('main.html', title="Fueling Change",
                                         isLoggedIn=(True if userID!=None else False),
+                                        funFact = randomFunFactInfo['fact_description'],
+                                        factSource = randomFunFactInfo['source'],
                                         userURL=username)
 
 
