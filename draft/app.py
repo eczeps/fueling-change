@@ -179,6 +179,7 @@ def profile(username):
         #variables for formatting template
         titleString = userInfo['first_Name'] + ' ' + userInfo['last_Name']
         userURL = userInfo['username'].lower()
+        userPhoto = userInfo['photo']
 
         #TODO: this line doesn't work and I'm not sure what it was supposed to do?
         #currUser = (int(UID) == current_uID if current_uID else False) #boolean
@@ -206,7 +207,8 @@ def profile(username):
                                                 userURL=userURL,
                                                 thisUser=userID, #will this be -1 if it needs to be?
                                                 compAchis=allComps,
-                                                starAchis=allStars)
+                                                starAchis=allStars,
+                                                photohere=userPhoto)
     #TODO: make it so users can view other peoples profiles if they're logged in (add an elif here)
     else:
         #user isn't logged in

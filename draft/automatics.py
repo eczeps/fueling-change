@@ -157,7 +157,7 @@ def updateLeaders(conn, AID): #AID is an int
     #all users
     curs.execute('''select footprint,uid,username from user order by footprint asc''')
     allUsers = curs.fetchall()
-    #TODO: how will we do deletions? will we store any data?
+    #TODO: how will we do deletions? will we store any data after?
 
     if debug:
         print("++ (automatics.py) allUsers:", allUsers)

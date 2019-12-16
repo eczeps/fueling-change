@@ -11,6 +11,7 @@ drop table if exists fact;
 Used to calculate the user's carbon footprint, as well as personal info */
 Create table user(
 	UID int auto_increment,
+	photo varchar(50) not null DEFAULT "earth.jpg",
 	first_Name varchar(30),
 	last_Name varchar(30),
 	username varchar(30),
