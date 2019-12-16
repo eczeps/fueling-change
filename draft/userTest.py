@@ -2,6 +2,8 @@ import dbi, databaseAccess
 import sys
 from random import randint
 
+#TODO: (ALISSA) fix labels on search boxes in templates
+
 '''Sets up automatic users that cannot be logged into.
 '''
 
