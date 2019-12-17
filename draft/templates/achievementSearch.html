@@ -74,14 +74,22 @@
             {% if isLoggedIn %}
                 <!-- user has it, it's repeatable, and it's self-reportable -->
                 {% if aID in reps %}
-                    <td class="small"><button class="star-button"><a>Remove Star</a></button></td>
+                    <td class="small"><button id = "button" class="removestar-button"><a>Remove Star</a></button></td>
                 <!-- user doesn't have it, it's repeatable, and it's self-reportable -->
                 {% else %}
-                    <td class="small"><button class="star-button"><a>Add Star</a></button></td>
+                    <td class="small"><button id = "button" class="addstar-button"><a>Add Star</a></button></td>
                 {% endif %}
             {% endif %}
             
         </tr>
         {% endfor %}
     </table>
+{% endblock %}
+
+{% block JSJQ %}
+<script>
+var URL = "{{url_for('addStar')}}";
+var URL2 = "{{url_for('removeStar')}}";
+</script>
+<script src="{{url_for('static',filename='stars.js')}}"></script>
 {% endblock %}

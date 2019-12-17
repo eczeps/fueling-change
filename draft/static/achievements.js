@@ -51,7 +51,8 @@ function append_achiever2(resp){ //should take in a response
 }
 
 function send_completed(aid){
-    $.post(URL, {'aid': aid}, append_achiever2, 'json');
+    // $.post(URL, {'aid': aid}, append_achiever2, 'json');
+    $.post(URL, {'aid': aid}, response, 'json');
 }
 
 function reset(aid){

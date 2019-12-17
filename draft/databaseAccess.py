@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = "atinney_db"
+d = ""
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -117,6 +117,20 @@ def getAchievePeople(conn, AID):
                     from completed inner join user using (UID) 
                     where AID = %s''', [AID])
     return sorted(curs.fetchall(), key=lambda u: (u['count'], u['footprint']))
+
+def addStarAchiev(conn, userID, aid):
+    ''' Inserts into the starred table this user's favorites achievement'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''insert into 
+                    starred (UID, AID) 
+                    values(%s, %s)''', [userID, aid])
+
+def removeStarAchiev(conn, userID, aid):
+    ''' Deletes the pair of (UID , AID ) from the starred table'''
+    curs = dbi.dictCursor(conn)
+    curs.execute('''delete from 
+                    starred 
+                    where UID=%s and AID=%s''', [userID, aid])
 
 
 # ==== ACCESS INFORMATION BASED ON USERS ====

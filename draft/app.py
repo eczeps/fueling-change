@@ -79,7 +79,10 @@ def achievement(searchFor):
     username = ""
     if userID != None:
         username = dba.getUserInfo(conn, userID)["username"]
-        stars = dba.getStarAchieves(conn, userID) 
+        items = dba.getStarAchieves(conn, userID) 
+
+        for i in items:
+            stars.append(i['AID'])
     #else:
         #not logged in
     #--end of accessing current user information
@@ -435,13 +438,23 @@ def resetAchieveAjax():
     dba.deleteCompletedAchiev(conn, userID, aid)
     return jsonify({"reload": "true"})
 
-# @app.route('/resetAchieve/', methods = ['POST'])
-# def resetAchieve():
-#     conn = dba.getConn(currDB)
-#     userID = session.get('uID')
-#     aid = request.form['aid']
-#     dba.deleteCompletedAchiev(conn, userID, aid)
-#     return redirect(url_for('achieveinfo', AID = aid))
+#updates the starred table  when a user stars an achievement 
+@app.route('/addStar/', methods = ['POST'])
+def addStar():
+    conn = dba.getConn(currDB)
+    userID = session.get('uID')
+    aid = request.form['aid']
+    dba.addStarAchiev(conn, userID, aid)
+    return jsonify({"status": "true"})
+
+#updates the starred table when a user unstars an achievement
+@app.route('/removeStar/', methods = ['POST'])
+def removeStar():
+    conn = dba.getConn(currDB)
+    userID = session.get('uID')
+    aid = request.form['aid']
+    dba.removeStarAchiev(conn, userID, aid)
+    return jsonify({"status": "true"})
 
 @app.route('/login/', methods=['GET'])
 def login():
