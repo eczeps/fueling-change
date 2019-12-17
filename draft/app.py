@@ -215,10 +215,54 @@ def profile(username):
         flash('you aren\'t logged in!')
         return redirect(url_for('login'))
 
+'''route to handle profile photo updates'''
+@app.route('/useraction/changephoto/<username>/', methods=['POST'])
+def upload_file(username):
+    UID = session.get('uID')
+
+    #get information
+    conn = dba.getConn(currDB)
+
+    #must be logged in to get to this point so no issues with null here
+    username = dba.getUserInfo(conn, UID)['username']
+
+    f = request.files['file']
+    fileParts = os.path.splitext(f.filename)
+
+    print("++ fileParts:", fileParts)
+
+    extension = fileParts[1]
+    acceptableTypes = {".png", ".jpg", ".gif", ".jpeg"}
+    if len(extension)==0:
+        flash("photo not changed")
+        return(redirect(url_for('profile', user=username)))
+
+    elif not (extension in acceptableTypes):
+        flash("unnacceptable file type: please use .png, .jpg, .gif, or .jpeg")
+        return(redirect(url_for('profile', user=username)))
+
+    saveFile = username + extension
+
+    f.save(os.path.join('static/pictures/', saveFile))
+
+    #take photo inputted to the form and put it's path in the database before re-rendering
+    defaultChanged = dba.updatePhoto(conn, UID, saveFile)
+
+    if defaultChanged:
+        flash("photo changed successfully!")
+
+    return(redirect(url_for('profile', user=username)))
+
+
+
+
+
+
+
 '''route to handle user updating or entering new data through the reporting form'''
 @app.route('/useraction/report/<user>/', methods=['POST'])
 def reportData(user):
-    UID = session.get('uID') #format was first-lastname-UID
+    UID = session.get('uID')
     #get information
     conn = dba.getConn(currDB)
     #take data user inputted to the form and put it in the database before re-rendering

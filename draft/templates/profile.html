@@ -29,9 +29,13 @@
 
     <div id="wrapper">
         <div id="left">
-            <img src="{{url_for('static', filename = photohere)}}"
+            <img id="profilephoto" src="{{url_for('static', filename = photohere)}}"
                  alt="Profile Photo for {{title}}"/>
         </div> <!-- end of left div -->
+
+        <script>
+            document.getElementById("profilephoto").src="{{url_for('static', filename = photohere)}}";
+        </script>
         
         <div id="right">
         <h1>Hi {{title}}</h1> 
@@ -39,11 +43,16 @@
         <p>What would you like to do today?</p>
 
         <form id="reporting" method=POST action="/useraction/{{userURL}}/">
-            <button id="reportbtn" class="report-button" type="submit" name="submit" value="report">Report Achievements</button>
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="report">Update Carbon Usage</button>
         </form>
 
         <form id="achieving" method=POST action="/profile/{{userURL}}/">
             <button id="reportbtn" class="report-button" type="submit" name="submit" value="stats">View My Statistics</button>
+            <!-- statistics also includes achievements -->
+        </form>
+
+        <form id="achieving" method=POST action="/useraction/{{userURL}}/">
+            <button id="reportbtn" class="report-button" type="submit" name="submit" value="upload">Change Photo</button>
             <!-- statistics also includes achievements -->
         </form>
         </div> <!-- end of right div -->

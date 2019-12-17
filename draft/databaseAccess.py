@@ -241,6 +241,7 @@ def getSaltByUsername(conn, username):
     curs.execute('''select salt from user where username = %s''', [username])
     return curs.fetchone()
 
+# A-U-11
 def checkCorrectUser(conn,username,UID):
     '''Goes into the database to check if this username matches
     the userID's username of the person who is logged in.
@@ -251,7 +252,6 @@ def checkCorrectUser(conn,username,UID):
     # TODO: Can usernames be uppercased at all?
 
     return ((username == currUsername), currUsername)
-
 
 # ==== ACCESS INFORMATION BASED ON USERS AND ACHIEVEMENTS ====
 # A-B-1
@@ -294,6 +294,7 @@ def getUserForAchievement(conn, UID, AID):
 
     return (res, hasCount)
 
+# A-B-3
 def getUserCompletedAchiev(conn, uid, aid):
     '''Returns UID, AID, count, timestamp from completed if the specified user has 
     completed the specified achievement'''
@@ -336,8 +337,7 @@ def updateUserInfo(conn, UID, flights, driving, lamb, beef, \
 def calculateUserFootprint(conn, UID):
     '''given a user's UID, get their info from the database and uses the
     carbon footprint calculator (calculator.py) to calculate and return 
-    a total footprint
-    optional argument is for printing purposes'''
+    a total footprint'''
     #TODO: this works but the numbers seem to be slightly off. look into this more
     curs = dbi.dictCursor(conn)
     curs.execute(''' select 
@@ -387,6 +387,18 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
                     [username, hashed_password])
     return curs.fetchone()
 
+# M-U-4
+def updatePhoto(conn, UID, fileName):
+    '''update the user's profile photo. returns true if filename! was changed
+    useful for first photo change'''
+    curs = dbi.dictCursor(conn)
+    
+    #will always be an update since we have to have the user before
+    #they can change their user profile photo
+    curs.execute('''update user set photo=%s where uid=%s''', [fileName,UID])
+    curs.execute('''select ROW_COUNT()''')
+
+    return (curs.fetchone()['ROW_COUNT()'] == 1)
 
 # ==== MODIFY DATABASE BASED ON USERS AND ACHIEVEMENTS ====
 # M-B-1

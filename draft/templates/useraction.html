@@ -1,7 +1,7 @@
 {% extends "profile.html" %} 
 <!-- Two different load cases: -->
 <!-- (1) User pressed report button on profile page -->
-<!-- (2) User pressed find user button on profile page -->
+<!-- (2) User pressed find change button on profile page -->
 
 {% block navigation %}
     <div id="navigation">
@@ -23,16 +23,12 @@
     </div>
 {% endblock %}
 
-{% block flashing %}
-    <!-- flashes for unfruitful searches will go here -->
-{% endblock %}
-
 {% block body %}
     {% if request.form['submit'] == 'report' %}
     <!-- (1) THIS IS WHERE THE USER CAN INSERT SELF-REPORTED INFORMATION -->
-    <!-- empty fields should be ignored -->
+    <!-- fields should be autofilled -->
 
-    <h1>Update Information</h1>
+    <h1>Update Carbon Information</h1>
     <!-- How they add more data or insert data for the first time -->
     <div class="centerme">
     <form class="bigform" id="update" method=POST action="/useraction/report/{{userURL}}/">
@@ -85,6 +81,25 @@
         </table>
     </form>
     </div> <!-- end of centerme div -->
+    
+    <!-- ------------------------------------------- -->
+    {% elif request.form['submit'] == 'upload' %}
+    <!-- (2) THIS IS WHERE THE USER CAN UPLOAD A PROFILE IMAGE -->
+    <h1>Change Profile Photo</h1>
+    <!-- How they add more data or insert data for the first time -->
+    <div class="centerme">
+        <form class="exwide" action="{{url_for('upload_file', username=userURL)}}" method="post" enctype="multipart/form-data">
+        <table>
+            <tr><td class="signup"><label>Select Image File to Upload:</label></td>
+                <td><input type="file" name="file"></td>
+                <td><button id="updatebtn" type="submit" name="submit" value="updateInfo">Submit!</button></td></tr>
+        </table>
+            <!-- <input type="submit" name="submit" value="Upload"> -->
+            </form>
+    </div> <!-- end of centerme div -->
+
+
+    
     {% endif %}
 
 {% endblock %}
