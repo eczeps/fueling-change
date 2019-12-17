@@ -11,12 +11,14 @@
     <p id = "completed">Congrats! You've completed this achievement!</p>>
     <button data-tt="{{achieveID}}" class="reset-button">reset</button>
     
-    <!-- add a form here to collect the user's data -->
-    <form id = "self-report" method=POST action="{{url_for('updateRepeatedAchiev')}}">
-        <input type="number" name="new_count" placeholder="{{count}}">
-        <input type= "hidden" name="aid" value="{{achieveID}}">
-        <button type="submit" name="submit">Update</button>
-    </form>
+        {% if info['isRepeatable'] == 1 %}
+        <!-- add a form here to collect the user's data -->
+        <form id = "self-report" method=POST action="{{url_for('updateRepeatedAchiev')}}">
+            <input type="number"  min="1" name="new_count" value="{{count}}">
+            <input type= "hidden" name="aid" value="{{achieveID}}">
+            <button type="submit" name="submit">Update</button>
+        </form>
+        {% endif %}
 
     {% else %}
     <p id = "completed">Did you complete this achievement?</p>>

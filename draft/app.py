@@ -379,7 +379,7 @@ def achieveinfo(AID):
         completed_info = dba.getUserCompletedAchiev(conn, userID, AID)
         if completed_info != None :
             completed = True
-            count = completed_info["count"] 
+            count = completed_info["count"]
     #else:
         #not logged in
     #--end of accessing current user information
