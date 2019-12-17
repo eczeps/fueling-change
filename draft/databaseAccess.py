@@ -5,7 +5,7 @@ import dbi
 import calculator as calculator
 import sys,math
 # the database to use:
-d = ""
+d = "eczepiel_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -221,7 +221,10 @@ def getStarAchieves(conn, UID):
 def doesUserHaveCarbonData(conn, UID):
     curs = dbi.dictCursor(conn)
     curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
-    return curs.fetchone()['has_carbon_data']
+    result = curs.fetchone()
+    print(result)
+    print(UID)
+    return result['has_carbon_data']
 
 # A-U-8
 def getUserFootprint(conn, UID):
@@ -244,16 +247,6 @@ def getUIDOnLogin(conn, username):
         return res
     else:
         return -1
-
-# A-U-10
-#TODO: delete this once logins & signups are working
-def getSaltByUsername(conn, username):
-    '''returns the salt associated with the given username
-    this is called when someone is logging in and we're checking their password
-    '''
-    curs = dbi.dictCursor(conn)
-    curs.execute('''select salt from user where username = %s''', [username])
-    return curs.fetchone()
 
 # A-U-11
 def checkCorrectUser(conn,username,UID):
@@ -353,6 +346,28 @@ def calculateUserFootprint(conn, UID):
     carbon footprint calculator (calculator.py) to calculate and return 
     a total footprint'''
     #TODO: this works but the numbers seem to be slightly off. look into this more
+    userData = getCarbonData(conn, UID)
+    if debug:
+        print('++ (databaseAccess.py) userData: ' + str(userData))
+    total = calculator.plane_emissions(userData['miles_flown']) \
+            + calculator.car_emissions(userData['miles_driven']) \
+            + calculator.meat_emissions(userData['servings_lamb'], \
+            userData['servings_beef'], userData['servings_cheese'], \
+            userData['servings_pork'], userData['servings_turkey'], \
+            userData['servings_chicken']) \
+            + calculator.washer_emissions(userData['laundry']) \
+            + calculator.dryer_emissions(userData['laundry'])
+    
+    curs = dbi.dictCursor(conn)
+    #update footprint in user table
+    curs.execute('''update user set footprint = %s 
+                    where UID = %s''',
+                [total, UID])
+    
+    return total
+
+
+def getCarbonData(conn, UID):
     curs = dbi.dictCursor(conn)
     curs.execute(''' select 
                         miles_flown,
@@ -366,24 +381,7 @@ def calculateUserFootprint(conn, UID):
                         laundry
                     from carbon where UID = %s
                 ''', [UID])
-    userData = curs.fetchone()
-    if debug:
-        print('++ (databaseAccess.py) userData: ' + str(userData))
-    total = calculator.plane_emissions(userData['miles_flown']) \
-            + calculator.car_emissions(userData['miles_driven']) \
-            + calculator.meat_emissions(userData['servings_lamb'], \
-            userData['servings_beef'], userData['servings_cheese'], \
-            userData['servings_pork'], userData['servings_turkey'], \
-            userData['servings_chicken']) \
-            + calculator.washer_emissions(userData['laundry']) \
-            + calculator.dryer_emissions(userData['laundry'])
-    
-    #update footprint in user table
-    curs.execute('''update user set footprint = %s 
-                    where UID = %s''',
-                [total, UID])
-    
-    return total
+    return curs.fetchone()
 
 # M-U-3
 def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):

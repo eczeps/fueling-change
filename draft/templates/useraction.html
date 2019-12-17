@@ -33,8 +33,8 @@
     <div class="centerme">
     <form class="bigform" id="update" method=POST action="/useraction/report/{{userURL}}/">
         <table>
-        <tr><td class="forform"><label>Flights: <input type="number" id="flights" placeholder="Annual Flight Mileage" name="flights"></label></td></tr>
-        <tr><td class="forform"><label>Drives: <input type="number" id="drives" placeholder="Monthly Driving Mileage" name="drives"></label></td></tr>
+        <tr><td class="forform"><label>Miles Flown Annually: <input type="number" id="flights" name="flights" value={{flights}}></label></td></tr>
+        <tr><td class="forform"><label>Miles Driven Monthly: <input type="number" id="drives" name="drives" value={{drives}}></label></td></tr>
         
         <tr><td class="forform"><fieldset>
             <legend>Car Type</legend>
@@ -53,13 +53,13 @@
             </fieldset>
         </td></tr>
 
-        <tr><td class="forform"><label>Lamb: <input type="number" id="lamb" placeholder="Lamb Servings per Week" name="lamb"></label></td></tr>
-        <tr><td class="forform"><label>Beef: <input type="number" id="beef" placeholder="Beef Servings per Week" name="beef"></label></td></tr>
-        <tr><td class="forform"><label>Cheese: <input type="number" id="cheese" placeholder="Cheese Servings per Week" name="cheese"></label></td></tr>
-        <tr><td class="forform"><label>Pork: <input type="number" id="pork" placeholder="Pork Servings per Week" name="pork"></label></td></tr>
-        <tr><td class="forform"><label>Turkey: <input type="number" id="turkey" placeholder="Turkey Servings per Week" name="turkey"></label></td></tr>
-        <tr><td class="forform"><label>Chicken: <input type="number" id="chicken" placeholder="Chicken Servings per Week" name="chicken"></label></td></tr>
-        <tr><td class="forform"><label>Laundry: <input type="number" id="laundry" placeholder="Laundry per Week" name="laundry"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Lamb Servings: <input type="number" id="lamb" name="lamb" value={{lamb}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Beef Servings: <input type="number" id="beef" name="beef" value={{beef}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Cheese Servings: <input type="number" id="cheese" name="cheese" value={{cheese}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Pork Servings: <input type="number" id="pork" name="pork" value={{pork}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Turkey Servings: <input type="number" id="turkey" name="turkey" value={{turkey}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Chicken Servings: <input type="number" id="chicken" name="chicken" value={{chicken}} min="0"></label></td></tr>
+        <tr><td class="forform"><label>Weekly Loads of Laundry: <input type="number" id="laundry" name="laundry" value={{laundry}} min="0"></label></td></tr>
 
         <tr><td class="forform"><fieldset>
             <legend>Typical Drying Style</legend>

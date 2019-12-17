@@ -293,17 +293,17 @@ view statistics
 @app.route('/useraction/', methods=['POST', 'GET'], defaults={'user': ""})
 @app.route('/useraction/<user>/', methods=['POST', 'GET'])
 def useract(user):
-    #TODO: do we want to change this so that you can only view your own profile?
-    #the way it is right now, profiles are publicly viewable and we should really
-    #think about whether randos are able to edit other peoples' profiles this way
-    #The if/else's I (alissa) set up should prevent randos from editing: see profile.html
-
     #grab the user id
     UID = session.get('uID')
 
     #get information
     conn = dba.getConn(currDB)
     userInfo = dba.getUserInfo(conn, UID)
+
+    carbonData = {}
+    has_carbon_data = dba.doesUserHaveCarbonData(conn, UID)
+    if has_carbon_data:
+        carbonData = dba.getCarbonData(conn, UID)
 
     #check achievements that we need to check for the user
     atm.updateAutomaticAchieves(conn) #right now these are leadership achieves
@@ -313,7 +313,16 @@ def useract(user):
     currUser = (int(UID) == session['uID']) #boolean
     return render_template('useraction.html', isLoggedIn=currUser,
                                                 userURL=user,
-                                                thisUser=session['uID'])
+                                                thisUser=UID,
+                                                flights=carbonData.get('miles_flown'),
+                                                drives=carbonData.get('miles_driven'),
+                                                lamb=carbonData.get('servings_lamb'),
+                                                beef=carbonData.get('servings_beef'),
+                                                cheese=carbonData.get('servings_cheese'),
+                                                pork=carbonData.get('servings_pork'),
+                                                turkey=carbonData.get('servings_turkey'),
+                                                chicken=carbonData.get('servings_chicken'),
+                                                laundry=carbonData.get('laundry'))
 
 
 '''route to display information for a given achievement and allows the user 
