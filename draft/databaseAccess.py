@@ -219,11 +219,11 @@ def getStarAchieves(conn, UID):
 
 # A-U-7
 def doesUserHaveCarbonData(conn, UID):
+    '''returns the value of has_carbon_data for a given user.
+    tells us whether they've filled out the carbon data form at least once'''
     curs = dbi.dictCursor(conn)
     curs.execute(''' select has_carbon_data from user where UID=%s''', [UID])
     result = curs.fetchone()
-    print(result)
-    print(UID)
     return result['has_carbon_data']
 
 # A-U-8
@@ -368,6 +368,7 @@ def calculateUserFootprint(conn, UID):
 
 
 def getCarbonData(conn, UID):
+    '''given a UID, get the carbon data for that user'''
     curs = dbi.dictCursor(conn)
     curs.execute(''' select 
                         miles_flown,
@@ -439,6 +440,8 @@ def updateCompletedCount(conn, UID, AID, count):
                         [count, UID, AID])
 
 def getFunFact(conn, id):
+    '''Given an id (which the route is in charge of randomly generating)
+    return the associated fun fact & its source from our fun facts table'''
     curs = dbi.dictCursor(conn)
     curs.execute('''select fact_description,source from fact where id=%s''', [id])
     return curs.fetchone()

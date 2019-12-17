@@ -9,15 +9,6 @@ import sys,os,random,math
 import databaseAccess as dba
 import automatics as atm
 
-#TODO: (ELLIE) emissions don't update to the database after calculations
-#TODO: (ELLIE) Figure out team database
-#TODO: (ESTRELLA) finish go & completed buttons
-#TODO: (ESTRELLA) make templates more inheritey
-#TODO: run all the code through WAVE (whoever pushes last)
-#TODO: (ESTRELLA) make sure we always use url_for (even in templates)
-#TODO: (ELLIE) make a powerpoint/outline for the presentation
-#TODO: (ESTRELLA) submit a request for a team shell account, and email him when you do it
-
 currDB = dba.d
 debug = dba.debug
 debugLong = dba.debugLong
@@ -78,13 +69,12 @@ def achievement(searchFor):
 
     username = ""
     if userID != None:
+        #if the user is logged in
         username = dba.getUserInfo(conn, userID)["username"]
         items = dba.getStarAchieves(conn, userID) 
 
         for i in items:
             stars.append(i['AID'])
-    #else:
-        #not logged in
     #--end of accessing current user information
 
     #if the user is searching for something, access the database to get search results
@@ -157,12 +147,10 @@ def users(userSearch):
 @app.route('/profile/', methods=['POST', 'GET'], defaults={'username': ""})
 @app.route('/profile/<username>/', methods=['POST', 'GET'])
 def profile(username):
-    #TODO: make the URls just the username, don't have them include the UID
     userID = session.get('uID')
 
     #connect to database
     conn = dba.getConn(currDB)
-    #TODO: see hwk6 to handle when user is an empty string (see movies route)
 
     if (userID!=None):
         #check that the username in the url matches this user's username
@@ -184,9 +172,6 @@ def profile(username):
         userURL = userInfo['username'].lower()
         userPhoto = "pictures/" + userInfo['photo']
 
-        #TODO: this line doesn't work and I'm not sure what it was supposed to do?
-        #currUser = (int(UID) == current_uID if current_uID else False) #boolean
-
         #get achievements
         allComps = dba.getCompAchieves(conn, userID)
         allStars = dba.getStarAchieves(conn, userID)
@@ -200,8 +185,7 @@ def profile(username):
             emissionsRAW = dba.calculateUserFootprint(conn, userID)
             emissions = dba.prettyRound(emissionsRAW)
         else:
-            #TODO: maybe figure out a better thing to display when a user doesn't have emissions data than just a 0?
-            #fix this by forcing them to fill out data on sign up or on login until they do it.
+            #if a user hasn't filled out the carbon data form yet, display emissions as 0
             emissions = 0
     
         return render_template('profile.html',  title=titleString,
@@ -255,8 +239,6 @@ def upload_file(username):
         flash("photo changed successfully!")
 
     return(redirect(url_for('profile', user=username)))
-
-
 
 
 
@@ -382,6 +364,7 @@ def achieveinfo(AID):
     username = ""
 
     if userID != None:
+        #the user is logged in
         username = dba.getUserInfo(conn, userID)["username"]
         user_info = dba.getUserInfo(conn, userID)
         #check if the user has already completed this achievement
@@ -389,8 +372,6 @@ def achieveinfo(AID):
         if completed_info != None :
             completed = True
             count = completed_info["count"]
-    #else:
-        #not logged in
     #--end of accessing current user information
 
     achieve_info = dba.getAchieveInfo(conn, AID)
@@ -429,21 +410,27 @@ def updateCompleted():
                     'username': user_info['username'],
                     'count': user_info['count'] if hasCount else 1})
 
-
+'''route to handle updating a repeated achievement (post only)'''
 @app.route('/updateRepeatedAchiev/', methods= ['POST'])
 def updateRepeatedAchiev():
     conn = dba.getConn(currDB)
+    #get user info
     userID = session.get('uID')
     aid = request.form["aid"]
     new_count = request.form["new_count"]
+    #update the database before redirecting the user
     dba.updateCompletedCount(conn, userID, aid, new_count)
     return redirect(url_for('achieveinfo', AID = aid))
 
+
+'''route to handle resetting an achievement (using ajax)'''
 @app.route('/resetAchieveAjax/', methods = ['POST'])
 def resetAchieveAjax():
     conn = dba.getConn(currDB)
+    #get user info
     userID = session.get('uID')
     aid = request.form['aid']
+    #update the database before returning json data back to the frontend
     dba.deleteCompletedAchiev(conn, userID, aid)
     return jsonify({"reload": "true"})
 
@@ -465,33 +452,35 @@ def removeStar():
     dba.removeStarAchiev(conn, userID, aid)
     return jsonify({"status": "true"})
 
+'''route to handle users logging in and out'''
 @app.route('/login/', methods=['GET'])
 def login():
     #userID is the id of the user currently logged in (if any)
     userID = session.get('uID') 
-    if userID!=None: #TODO:i don't think this logic works right I think it's backwards
+    if userID!=None:
         #user is logged in; they're trying to log out
         flash('Logging out!')
-        #how can they be logging out if the userID is already None
-        #wouldn't they already be logged out?
         session['uID'] = None
+        #get rid of the session UID and redirect to the home page
         return redirect(url_for('index'))
     else:
-        #user isn't logged in; they're trying to log in
+        #user isn't logged in; they're trying to log in.
+        #render the page with the login form
         return render_template('login_page.html',
                                 isLoggedIn=False,
                                 userURL="",
                                 title="Login")
             
 
+'''route to handle the login form being submitted'''
 @app.route('/setUID/', methods=["POST"])
 def setUID():
-    #gets called when a user presses submit on the login form
     try:
         username = request.form.get('username')
         password = request.form.get('password')
         conn = dba.getConn(currDB)
-        #userID will either be the user's ID or -1 if it was an invalid username/password combo. this also returns the hashed password
+        #userID will either be the user's ID or -1 if it was an invalid username/password combo. 
+        #this also returns the hashed password
         row = dba.getUIDOnLogin(conn, username)
         userID = row['UID']
         hashed_password = row['password']
@@ -499,16 +488,18 @@ def setUID():
         if debug:
             print('++ (app.py) got all necessary data in login')
         if userID == -1:
+            #if it was an invalid login
             if debug:
                 print("++ (app.py) the database didn't think your username was legit")
             flash("login incorrect. Try again or join")
             return redirect(url_for('index'))
         else:
+            #compare the passwords to see if they're the same
             hashed2 = bcrypt.hashpw(password.encode('utf-8'),hashed_password.encode('utf-8'))
             hashed2_str = hashed2.decode('utf-8')
 
             if hashed2_str == hashed_password:
-                #log in success!
+                #log in success! correct password
                 if debug:
                     print('++ (app.py) your password was right! logging you in')
                 flash('successfully logged in as '+username)
@@ -525,15 +516,17 @@ def setUID():
                 username=dba.getUserInfo(conn, currentUser)['username']
                 return redirect(url_for('profile', username=username))
             else:
+                #incorrect password
                 if debug:
                     print('++ (app.py) your password was probably wrong')
                 flash('login incorrect. Try again or join')
                 return redirect(url_for('login'))
     except Exception as err:
         print('*** ERROR (login): ' + str(err) + ' ***')
-        flash('form submission error '+ str(err))
+        flash('sorry, there was an error logging you in! '+ str(err))
         return redirect( url_for('login') )
 
+'''route to handle new users signing up'''
 @app.route('/signup/', methods=["GET", "POST"])
 def signup():
     signupSuccessful=False
@@ -541,6 +534,7 @@ def signup():
         #get method renders a page w a form
         return render_template('signup.html', title="Sign Up")
     else:
+        #handle them submitting the sign up form
         try:
             username = request.form['username']
             passwd1 = request.form['password1']
@@ -548,8 +542,9 @@ def signup():
             if passwd1 != passwd2:
                 print('++ (app.py) passwords do not match')
                 flash('passwords do not match')
+                #if the passwords don't match, let them try again
                 return redirect(url_for('signup'))
-            #hash the password the user provided
+            #once the passwords match, hash the password the user provided
             hashed = bcrypt.hashpw(passwd1.encode('utf-8'), bcrypt.gensalt())
             #convert it from bytes to string
             hashed_str = hashed.decode('utf-8')
@@ -560,8 +555,10 @@ def signup():
             conn = dba.getConn(currDB)
             uID = dba.setUIDOnSignup(conn, username, hashed_str, fName, lName)['UID']
             #if this is a dictionary make it a string
-            print('++ (app.py) uID after signup: ' + str(uID))
+            if debug:
+                print('++ (app.py) uID after signup: ' + str(uID))
             if uID != -1:
+                #if it was a valid login
                 print('++ (app.py) logging you in! after signup')
                 #actually log them in in the session
                 session['uID'] = uID
