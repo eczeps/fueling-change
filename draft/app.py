@@ -228,6 +228,10 @@ def upload_file(username):
         flash("unnacceptable file type: please use .png, .jpg, .gif, or .jpeg")
         return(redirect(url_for('profile', user=username)))
 
+    #important to delete if extensions aren't the same
+    #also forces a reload
+    dba.deletePhoto(conn,UID)
+
     saveFile = username + extension
 
     f.save(os.path.join('static/pictures/', saveFile))

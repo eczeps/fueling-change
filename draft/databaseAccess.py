@@ -420,17 +420,23 @@ def deleteUser(conn, UID):
     curs = dbi.dictCursor(conn)
     
     #delete the photo if it isn't earth.jpg
-    curs.execute('''select photo from user where UID=%s''', [UID])
-    f = curs.fetchone()['photo']
-    if f != "earth.jpg":
-        f = os.path.join('static/pictures/', f)
-        os.remove(f)
+    deletePhoto(conn, UID)
 
     #remove from databases
     curs.execute('''delete from completed where UID=%s''', [UID])
     curs.execute('''delete from starred where UID=%s''', [UID])
     curs.execute('''delete from carbon where UID=%s''', [UID])
     curs.execute('''delete from user where UID=%s''', [UID])
+
+def deletePhoto(conn, UID):
+    '''Deletes photo from file system if it isn't earth.jpg'''
+    curs = dbi.dictCursor(conn)
+    
+    curs.execute('''select photo from user where UID=%s''', [UID])
+    f = curs.fetchone()['photo']
+    if f != "earth.jpg":
+        f = os.path.join('static/pictures/', f)
+        os.remove(f)
 
 # ==== MODIFY DATABASE BASED ON USERS AND ACHIEVEMENTS ====
 # M-B-1
