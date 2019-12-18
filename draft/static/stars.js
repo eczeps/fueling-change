@@ -10,7 +10,6 @@ function addStar(event){
     console.log("clicked add star");
     //get the AID from whichever line was clicked
     var AID =  $(this).closest("tr").attr('data-tt'); 
-    console.log(AID);
     //if the AID is not in the clicked then send to backend and add it to the clicked list 
     if(clickedStar.includes(AID) == false){
         console.log("added Star");

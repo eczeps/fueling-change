@@ -28,15 +28,15 @@ Create table carbon(
 	foreign key (UID) references user(UID)
         on update cascade
         on delete cascade,
-	miles_flown int,
-	miles_driven int,
-	servings_lamb int,
-	servings_beef int,
-	servings_cheese int,
-	servings_pork int,
-	servings_turkey int,
-	servings_chicken int,
-	laundry int,
+	miles_flown int not null DEFAULT 0,
+	miles_driven int not null DEFAULT 0,
+	servings_lamb int not null DEFAULT 0,
+	servings_beef int not null DEFAULT 0,
+	servings_cheese int not null DEFAULT 0,
+	servings_pork int not null DEFAULT 0,
+	servings_turkey int not null DEFAULT 0,
+	servings_chicken int not null DEFAULT 0,
+	laundry int not null DEFAULT 0,
 	Primary key (UID)
 );
 
