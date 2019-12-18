@@ -11,7 +11,7 @@
         <!-- use a class="exlong" for whatever the largest element is -->
         <!-- completed achievements -->
         <div class="centerme">
-        <h2><u>Completed Achievements</u></h2>
+        <h2>Completed Achievements</h2>
         <table class="exlong" id="completedAchieves">
             <tr>
                 <th class="small">Earned</th>
@@ -30,7 +30,7 @@
                     {% if achievement['isRepeatable']==1 %}
                         <b>{{achievement['count']}}</b>
                     {% else %}
-                        &#x2714;
+                        &#x2714; <!-- checkmark -->
                     {% endif %}
                 </td>
                 <td class="title"><b><a href="{{url_for('achieveinfo',AID=aID)}}">{{achievement['title']}}</a></b></td>
@@ -40,7 +40,7 @@
         </table>
 
         <!-- starred achievements -->
-        <h2><u>Starred Achievements</u></h2>
+        <h2>Starred Achievements</h2>
 
         {% if starAchis|length != 0 %}
             <div class="visible">

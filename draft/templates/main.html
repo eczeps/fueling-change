@@ -13,6 +13,7 @@
     <div id="content">
     <div id="textpad">
     {% block navigation %}
+        <nav>
         <div id="navigation">
             <ul>
             <li><a class="active" href="/">Home</a></li>
@@ -26,6 +27,7 @@
                 {% endif %}
             </ul>
         </div>
+        </nav>
     {% endblock %}
 
 {% with messages = get_flashed_messages() %}
@@ -65,7 +67,7 @@
         Welcome to Fueling Change. Select from the options above to interact with our website.
     </p>
 
-    <h3>Random Climate Fun Fact</h3>
+    <h2 id="indexheader">Random Climate Fun Fact</h2>
     <p>{{funFact}}</p>
     <p>(we found this at <a href={{factSource}}>this source</a>).</p>
     <p>Try reloading this page to show a different fun fact!</p>

@@ -3,9 +3,9 @@ from flask import (Flask, render_template, make_response, url_for, request,
                    )
 import dbi
 import calculator as calculator
-import sys,math
+import sys,math,os
 # the database to use:
-d = "eczepiel_db"
+d = "atinney_db"
 # script testingSetup.sh replaces this like so:
 # $ ./testingSetup.sh atinney_db
 
@@ -188,7 +188,8 @@ def getAllUsers(conn, sort="footprint"):
     curs = dbi.dictCursor(conn)
     curs.execute('''select first_Name, last_Name, footprint, username
                     from user''')
-    return sorted(curs.fetchall(), key=lambda u: (u[sort], u['username']))
+
+    return sorted(curs.fetchall(), key=lambda u: u[sort])
 
 # A-U-5
 def getCompAchieves(conn, UID):
@@ -366,7 +367,7 @@ def calculateUserFootprint(conn, UID):
     
     return total
 
-
+# M-U-3
 def getCarbonData(conn, UID):
     '''given a UID, get the carbon data for that user'''
     curs = dbi.dictCursor(conn)
@@ -384,7 +385,7 @@ def getCarbonData(conn, UID):
                 ''', [UID])
     return curs.fetchone()
 
-# M-U-3
+# M-U-4
 def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
     #puts the username, hashed password, salt, in the database
     #returns the uid the database created for this user
@@ -400,7 +401,7 @@ def setUIDOnSignup(conn, username, hashed_password, firstName, lastName):
                     [username, hashed_password])
     return curs.fetchone()
 
-# M-U-4
+# M-U-5
 def updatePhoto(conn, UID, fileName):
     '''update the user's profile photo. returns true if filename! was changed
     useful for first photo change'''
@@ -412,6 +413,24 @@ def updatePhoto(conn, UID, fileName):
     curs.execute('''select ROW_COUNT()''')
 
     return (curs.fetchone()['ROW_COUNT()'] == 1)
+
+# M-U-6
+def deleteUser(conn, UID):
+    '''deletes a user's information everywhere'''
+    curs = dbi.dictCursor(conn)
+    
+    #delete the photo if it isn't earth.jpg
+    curs.execute('''select photo from user where UID=%s''', [UID])
+    f = curs.fetchone()['photo']
+    if f != "earth.jpg":
+        f = os.path.join('static/pictures/', f)
+        os.remove(f)
+
+    #remove from databases
+    curs.execute('''delete from completed where UID=%s''', [UID])
+    curs.execute('''delete from starred where UID=%s''', [UID])
+    curs.execute('''delete from carbon where UID=%s''', [UID])
+    curs.execute('''delete from user where UID=%s''', [UID])
 
 # ==== MODIFY DATABASE BASED ON USERS AND ACHIEVEMENTS ====
 # M-B-1

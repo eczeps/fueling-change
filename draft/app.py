@@ -242,6 +242,24 @@ def upload_file(username):
 
 
 
+'''route to handle user deleteing'''
+@app.route('/useraction/deleteconfirm/<user>/', methods=['POST'])
+def deleteUser(user):
+    UID = session.get('uID')
+    #get information
+    conn = dba.getConn(currDB)
+
+
+    if request.form['submit'] == 'yes':
+        dba.deleteUser(conn, UID)
+
+        session['uID'] = None
+
+        flash(user + ' was deleted.')
+        return(redirect(url_for('index')))
+
+    elif request.form['submit'] == 'no':
+        return(redirect(url_for('profile', user=user)))
 
 
 '''route to handle user updating or entering new data through the reporting form'''
@@ -267,6 +285,46 @@ def reportData(user):
 
     return(redirect(url_for('profile', user=user)))
 
+'''route for showing a user's OWN achievements'''
+@app.route('/profile/statistics/<user>', methods=['POST'])
+def userAchis(user):
+    conn = dba.getConn(currDB)
+    #need for if the user selects their profile tab
+    userID = session.get('uID')
+
+    #username of the logged in user
+    username = ""
+
+    if userID != None:
+        username = dba.getUserInfo(conn, userID)["username"]
+
+    #this is the searched for information
+    searchedInfo = dba.getUserByUsername(conn, user)
+    nameTitle = searchedInfo['first_Name'] + " " + searchedInfo['last_Name']
+    searchedID = searchedInfo['UID']
+
+    #achievements of the seached user that we want to look at
+    allComps = dba.getCompAchieves(conn, searchedID)
+    allStars = dba.getStarAchieves(conn, searchedID)
+
+    #calculate emissions of the searched user
+    has_carbon_data = dba.doesUserHaveCarbonData(conn, searchedID)
+    if debug:
+        print('++ (app.py) has_carbon_data in searched-profile route: ' + str(has_carbon_data))
+    if has_carbon_data:
+        emissionsRAW = dba.calculateUserFootprint(conn, searchedID)
+        emissions = dba.prettyRound(emissionsRAW)
+    else:
+        emissions = dba.getUserFootprint(conn, searchedID)
+
+    return render_template('searchedProfile.html', title = nameTitle,
+                                                   thisUser = userID, #in nav bar
+                                                   isLoggedIn = (True if userID!=None else False),
+                                                   emissions = format(emissions, ','),
+                                                   compAchis = allComps,
+                                                   starAchis = allStars,
+                                                   userURL=username)
+
 
 '''route to handle actions users can take from their profile, including:
 report achievements
@@ -280,6 +338,7 @@ def useract(user):
 
     #get information
     conn = dba.getConn(currDB)
+
     userInfo = dba.getUserInfo(conn, UID)
 
     carbonData = {}
@@ -293,6 +352,7 @@ def useract(user):
     #variables for formatting template
     titleString = userInfo['first_Name'].lower() + ' ' + userInfo['last_Name'].lower()
     currUser = (int(UID) == session['uID']) #boolean
+
     return render_template('useraction.html', isLoggedIn=currUser,
                                                 userURL=user,
                                                 thisUser=UID,

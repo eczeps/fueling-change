@@ -1,6 +1,7 @@
 {% extends "achievementSearch.html" %}
 
 {% block navigation %}
+    <nav>
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
@@ -14,15 +15,16 @@
             {% endif %}
         </ul>
     </div>
+    </nav>
 {% endblock %}
 
 
 {% block search %}
 <form class="searchform" id="uSearch" method=POST action="/users/">
-    <table>
-        <tr><td class="signup"><label>Search:</label></td>
-            <td><input id="searchterm" placeholder="Search" name="searchterm"></td></tr>
-    </table>
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">Search</div>
+               <div id="right"><input id="searchterm" placeholder="Search" name="searchterm"></div></label>
+    </div>
     <button id="reportbtn" class="report-button" type="submit" name="submit" value="userSearch">Search Users</button>
 </form>
 {% endblock %}

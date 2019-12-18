@@ -27,6 +27,10 @@ H2 {
     text-align: center;
 }
 
+H2#indexheader{
+    text-align: left;
+}
+
 #messages { 
     color: purple;
     font-size: large;
@@ -43,8 +47,65 @@ form {
     text-align: center;
 }
 
+#delete {
+    border: none;
+    padding: 0px;
+    padding-top: 5px;
+    padding-right: 10px;
+    width: 200px;
+}
+
+[type=submit] {
+    font-size: 1em;
+    font-weight: normal;
+    border: 1px solid var(--blue);
+    border-radius: 0.5em;
+    background-color: var(--blue);
+}
+
+[type=submit]:hover{
+    border: 1px solid var(--light-blue);
+    border-radius: 0.5em;
+    background-color: var(--light-blue);
+}
+
+/* order matters */
+.removestar-button:hover{
+    background-color: gray;
+    color: black;
+    border-color: gray;
+}
+
+.removestar-button, .addstar-button:hover {
+    background-color: yellow;
+    color: black;
+    border-color: yellow;
+}
+
+.addstar-button {
+    background-color: gray;
+    color: black;
+    border-color: gray;
+}
+
+#deletebtn{
+    background-color: black;
+    color: white;
+    border: black;
+}
+
+#deletebtn:hover{
+    background-color: red;
+    color: white;
+    border: red;
+}
+
 .searchform{
     margin-top: 30px;
+}
+
+.regular{
+    margin-top: 0px;
 }
 
 .bigform {
@@ -65,14 +126,6 @@ form {
 
 .long {
     margin-bottom: 20px;
-}
-
-[type=submit] {
-    font-size: 1em;
-    font-weight: normal;
-    border: 1px solid var(--blue);
-    border-radius: 0.5em;
-    background-color: #d0FFFF;
 }
 
 fieldset {
@@ -162,20 +215,21 @@ li a:hover:not(.active) {
 #wrapper {
     display: flex;
 }
+#wrapper2 {
+    padding-bottom: 5px;
+}
   
 #left {
     flex: 0 0 182px;
+    text-align: center;
+}
+
+#left2{
+    flex: 1;
 }
   
 #right {
     flex: 1;
-}
-
-img {
-    width: 182px;
-    height: auto;
-    padding-top: 25px;
-    padding-right: 10px;
 }
 
 /* For the table */

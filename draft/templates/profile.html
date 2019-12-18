@@ -1,6 +1,7 @@
 {% extends "main.html" %}
 
 {% block navigation %}
+    <nav>
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
@@ -21,6 +22,7 @@
             {% endif %}
         </ul>
     </div>
+    </nav>
 {% endblock %}
 
 
@@ -29,12 +31,22 @@
 
     <div id="wrapper">
         <div id="left">
-            <img id="profilephoto" src="{{url_for('static', filename = photohere)}}"
-                 alt="Profile Photo for {{title}}"/>
+            <img id="profilephoto"
+                alt="Profile Photo for {{title}}"/>
+            
+            
+            <form id="delete" method=POST action="{{url_for('useract', user=userURL)}}">
+                <button id="deletebtn" class="report-button" type="submit" name="submit" value="delete">Delete Profile</button>
+                <!-- statistics also includes achievements -->
+            </form>
         </div> <!-- end of left div -->
 
         <script>
             document.getElementById("profilephoto").src="{{url_for('static', filename = photohere)}}";
+            document.getElementById("profilephoto").style.width="182px";
+            document.getElementById("profilephoto").style.height="auto";
+            document.getElementById("profilephoto").style.paddingTop="25px";
+            document.getElementById("profilephoto").style.paddingRight="10px";
         </script>
         
         <div id="right">
@@ -42,7 +54,7 @@
         <p>Your current emissions are {{emissions}} kilograms of carbon dioxide per year</p>
         <p>What would you like to do today?</p>
 
-        <form id="reporting" method=POST action="/useraction/{{userURL}}/">
+        <form id="reporting" method=POST action="{{url_for('useract', user=userURL)}}">
             <button id="reportbtn" class="report-button" type="submit" name="submit" value="report">Update Carbon Usage</button>
         </form>
 
@@ -51,7 +63,7 @@
             <!-- statistics also includes achievements -->
         </form>
 
-        <form id="achieving" method=POST action="/useraction/{{userURL}}/">
+        <form id="uploading" method=POST action="{{url_for('useract', user=userURL)}}">
             <button id="reportbtn" class="report-button" type="submit" name="submit" value="upload">Change Photo</button>
             <!-- statistics also includes achievements -->
         </form>
@@ -66,7 +78,7 @@
         <!-- use a class="exlong" for whatever the largest element is -->
         <!-- completed achievements -->
         <div class="centerme">
-        <h2><u>Completed Achievements</u></h2>
+        <h2>Completed Achievements</h2>
         <table class="exlong" id="completedAchieves">
             <tr>
                 <th class="small">Earned</th>
@@ -95,7 +107,7 @@
         </table>
 
         <!-- starred achievements -->
-        <h2><u>Starred Achievements</u></h2>
+        <h2>Starred Achievements</h2>
 
         {% if starAchis|length != 0 %}
             <div class="visible">

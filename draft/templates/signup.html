@@ -7,19 +7,27 @@ carbon footprint questions on it too-->
 {% block body %}
 <h1>{{title}}</h1>
 
-<form class="medform" action="{{url_for('signup')}}" method="POST">
-    <table>
-        <tr><td class="signup"><label>Username:</label></td>
-            <td><input type="text" name="username" label="username"></td></tr>
-        <tr><td class="signup"><label>Password:</label></td>
-            <td><input type="password" name="password1" label="username"></td></tr>
-        <tr><td class="signup"><label>Re-type Password:</label></td class="wide">
-            <td><input type="password" name="password2" label="username"></td></tr>
-        <tr><td class="signup"><label>First Name:</label></td>
-            <td><input type="firstName" name="firstName" label="firstName"></td></tr>
-        <tr><td class="signup"><label>Last Name:</label></td>
-            <td><input type="lastName" name="lastName" label="lastName"></td></tr>
-    </table>
+<form class="regular" action="{{url_for('signup')}}" method="POST">
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">Username</div>
+            <div id="right"><input type="text" name="username" label="username"></div></label>
+        </div>
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">Password</div>
+            <div id="right"><input type="password" name="password1" label="username"></div></label>
+        </div>
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">Re-type Password</div>
+            <div id="right"><input type="password" name="password2" label="username"></div></label>
+        </div>
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">First Name</div>
+            <div id="right"><input type="firstName" name="firstName" label="firstName"></div></label>
+        </div>
+    <div id="wrapper2">
+        <label><div id="left2" class="signup">Last Name</div>
+            <div id="right"><input type="lastName" name="lastName" label="lastName"></div></label>
+        </div>
     <input type="submit" value="Sign Up">
 </form>
 

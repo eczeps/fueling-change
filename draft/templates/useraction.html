@@ -4,6 +4,7 @@
 <!-- (2) User pressed find change button on profile page -->
 
 {% block navigation %}
+    <nav>
     <div id="navigation">
         <ul>
         <li><a href="/">Home</a></li>
@@ -21,6 +22,7 @@
             {% endif %}
         </ul>
     </div>
+    </nav>
 {% endblock %}
 
 {% block body %}
@@ -88,16 +90,27 @@
     <h1>Change Profile Photo</h1>
     <!-- How they add more data or insert data for the first time -->
     <div class="centerme">
-        <form class="exwide" action="{{url_for('upload_file', username=userURL)}}" method="post" enctype="multipart/form-data">
-        <table>
-            <tr><td class="signup"><label>Select Image File to Upload:</label></td>
-                <td><input type="file" name="file"></td>
-                <td><button id="updatebtn" type="submit" name="submit" value="updateInfo">Submit!</button></td></tr>
+        <form class="regular" action="{{url_for('upload_file', username=userURL)}}" method="post" enctype="multipart/form-data">
+            <div id="wrapper2">
+                <label><div id="left2" class="signup">Select Image File to Upload</div>
+                    <div id="right"><input type="file" name="file"></div></label>
+            </div>
+            <button id="updatebtn" type="submit" name="submit" value="updateInfo">Submit!</button></td></tr>
         </table>
-            <!-- <input type="submit" name="submit" value="Upload"> -->
             </form>
     </div> <!-- end of centerme div -->
 
+    <!-- ------------------------------------------- -->
+    {% elif request.form['submit'] == 'delete' %}
+    <div class="centerme">
+        <h1>Really Delete Profile?</h1>
+        <form action="{{url_for('deleteUser', user=userURL)}}" method="post">
+        <table>
+            <tr><td class="signup"><button id="updatebtn" type="submit" name="submit" value="yes">Yes!</button></td>
+                <td><button id="updatebtn" type="submit" name="submit" value="no">No!</button></td></tr>
+        </table>
+        </form>
+    </div> <!-- end of centerme div -->
 
     
     {% endif %}
