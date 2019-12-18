@@ -2,11 +2,9 @@ import dbi, databaseAccess
 import sys
 from random import randint
 
-#TODO: (ALISSA) fix labels on search boxes in templates
 
-'''Sets up automatic users that cannot be logged into.
-'''
-
+'''Sets up automatic users for testing purposes only
+This doesn't work in our team database (no dbi) :P'''
 if __name__ == '__main__':
     conn = databaseAccess.getConn(sys.argv[1])
     
